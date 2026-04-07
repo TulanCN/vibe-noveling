@@ -20,3 +20,7 @@ Thumbs.db
 # Environment
 .env
 .env.local
+
+# Claude Code
+.claude/
+.omc/
