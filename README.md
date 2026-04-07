@@ -54,28 +54,30 @@
 
 ## 安装
 
-### 方式一：Plugin Marketplace（推荐）
+### 方式一：Claude Plugin Marketplace（推荐）
+
+在 Claude Code 中直接安装：
 
 ```bash
-# 添加 marketplace 并安装
 /plugin marketplace add TulanCN/vibe-noveling
 /plugin install vibe-noveling@vibe-noveling
 ```
 
-### 方式二：手动安装
+安装后所有 13 个技能自动可用，支持自动更新。
+
+### 方式二：手动复制
 
 ```bash
 # 1. 克隆仓库
 git clone https://github.com/TulanCN/vibe-noveling.git
 
-# 2. 复制技能到你的 Claude Code 项目
+# 2. 复制到你的项目
 cp -r vibe-noveling/plugins/vibe-noveling/* 你的项目/.claude/skills/
 ```
 
-### 方式三：符号链接（推荐开发时使用）
+### 方式三：符号链接（适合开发调试）
 
 ```bash
-# 在你的项目目录下创建符号链接
 ln -s /path/to/vibe-noveling/plugins/vibe-noveling/novel-init .claude/skills/novel-init
 ln -s /path/to/vibe-noveling/plugins/vibe-noveling/novel-discuss .claude/skills/novel-discuss
 # ... 对每个 skill 重复
