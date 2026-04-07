@@ -54,22 +54,30 @@
 
 ## 安装
 
-### 方式一：手动安装
+### 方式一：Plugin Marketplace（推荐）
+
+```bash
+# 添加 marketplace 并安装
+/plugin marketplace add TulanCN/vibe-noveling
+/plugin install vibe-noveling@vibe-noveling
+```
+
+### 方式二：手动安装
 
 ```bash
 # 1. 克隆仓库
-git clone https://github.com/YOUR_USERNAME/vibe-noveling.git
+git clone https://github.com/TulanCN/vibe-noveling.git
 
 # 2. 复制技能到你的 Claude Code 项目
-cp -r vibe-noveling/* 你的项目/.claude/skills/
+cp -r vibe-noveling/plugins/vibe-noveling/* 你的项目/.claude/skills/
 ```
 
-### 方式二：符号链接（推荐开发时使用）
+### 方式三：符号链接（推荐开发时使用）
 
 ```bash
 # 在你的项目目录下创建符号链接
-ln -s /path/to/vibe-noveling/novel-init .claude/skills/novel-init
-ln -s /path/to/vibe-noveling/novel-discuss .claude/skills/novel-discuss
+ln -s /path/to/vibe-noveling/plugins/vibe-noveling/novel-init .claude/skills/novel-init
+ln -s /path/to/vibe-noveling/plugins/vibe-noveling/novel-discuss .claude/skills/novel-discuss
 # ... 对每个 skill 重复
 ```
 
@@ -129,7 +137,37 @@ your-novel/
 /novel-progress
 ```
 
-## 路径约定
+## 仓库结构
+
+```
+vibe-noveling/
+├── .claude-plugin/
+│   └── marketplace.json       # Plugin marketplace 清单
+├── plugins/
+│   └── vibe-noveling/          # 插件根目录
+│       ├── novel-init/
+│       ├── novel-discuss/
+│       │   └── references/
+│       ├── novel-bookplan/
+│       │   └── references/
+│       ├── novel-plan/
+│       │   └── references/
+│       ├── novel-write/
+│       │   └── tools/
+│       ├── novel-sync/
+│       ├── novel-master/
+│       ├── novel-knowledge/
+│       │   └── scripts/
+│       ├── novel-name/
+│       │   ├── data/
+│       │   └── tools/
+│       ├── novel-snapshot/
+│       │   └── scripts/
+│       └── novel-progress/
+│           └── scripts/
+├── README.md
+└── LICENSE
+```
 
 Skill 文件中使用 `{SKILL_DIR}` 作为占位符，表示该 Skill 的安装目录。实际使用时会解析为：
 
