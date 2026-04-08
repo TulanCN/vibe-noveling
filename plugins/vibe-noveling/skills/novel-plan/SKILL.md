@@ -11,10 +11,10 @@ description: |
   - 修订模式：当前章节已有 outline 为第一信息源，先提炼保留项/问题点/变更边界，再做差分修改，不默认整章重写
   - 读取 future/ 中的故事母型、分卷节奏卡、arc 规划与线程表，避免单章规划脱离全书和卷结构
   - 在写入大纲前自动检查待回收伏笔、实体命名一致性、设定完整度
-  - 大纲产出写入文件（ch-xxxx-outline.md），用户可直接阅读和手动修改
+  - 大纲产出写入 `chapters/vol-{volume_padded}/ch-{chapter_padded}/大纲.md`，用户可直接阅读和手动修改
   - 大纲主体固定为第三人称精简剧情纲要，不再输出剧情点切分
   - 剧情点/写作单元的切分延后到 `novel-write` 内部完成，不回写 outline
-  - 默认生成 chapters/ch-xxxx-context.md 供 novel-write 使用；修订模式下若大纲有实质变更，要视为 context 可能失效并尝试重生成；若生成失败，不阻断本次规划完成
+  - 默认生成 `chapters/vol-{volume_padded}/ch-{chapter_padded}/上下文.md` 供 novel-write 使用；修订模式下若大纲有实质变更，要视为 context 可能失效并尝试重生成；若生成失败，不阻断本次规划完成
   - 默认在大纲确认后执行一次 Opus 正文写作测试：真实试写一个连续片段，并基于试写过程反推当前大纲的断点、空洞点和不可写点
   - 设定缺失时提示用户去另一个 session 用 /novel-discuss 补全
 
@@ -54,7 +54,7 @@ description: |
 
 ### 你现在要产出的是什么
 
-`ch-xxxx-outline.md` 必须是一份适合作者直接阅读和手改的章节简纲，而不是给写作 agent 看的执行表。
+`chapters/vol-{volume_padded}/ch-{chapter_padded}/大纲.md` 必须是一份适合作者直接阅读和手改的章节简纲，而不是给写作 agent 看的执行表。
 
 **必须包含**：
 
@@ -76,7 +76,7 @@ description: |
 ### 你现在不该做什么
 
 - 不要把本章切成 10-20 个剧情点
-- 不要把正文阶段才需要的切分结果写回 `outline.md`
+- 不要把正文阶段才需要的切分结果写回 `大纲.md`
 - 不要为了“方便写作”牺牲“方便人工修改”
 
 ## 执行流程
@@ -84,20 +84,27 @@ description: |
 ### 前置：初始化检查
 
 1. 检查 `memory/future/00-index.md` 和 `memory/future/10-book.md` 是否存在。不存在则建议先 `/novel-bookplan`。
-2. **确定章节编号**：从 `CLAUDE.md` 的「创作进度 → 当前章节」读取，或由用户指定（如 `/novel-plan 5`）。后续流程中章节文件一律使用四位补零格式：`ch-xxxx-outline.md` / `ch-xxxx-context.md`。
-3. **确定信息源优先级**：
+2. **确定章节编号与所属卷**：从 `CLAUDE.md` 的「创作进度 → 当前章节」读取，或由用户指定（如 `/novel-plan 5`）。所属卷优先从 `memory/future/00-index.md`、对应卷卡或当前上下文判断；若无法定位 `volume_padded`，必须先提示用户补卷信息，不允许继续写入旧平铺路径。
+3. **建立章节目录契约**：本章所有产物统一写入同一个章节目录：
+   - 章节目录：`chapters/vol-{volume_padded}/ch-{chapter_padded}/`
+   - 大纲：`chapters/vol-{volume_padded}/ch-{chapter_padded}/大纲.md`
+   - 上下文：`chapters/vol-{volume_padded}/ch-{chapter_padded}/上下文.md`
+   - Opus 试写：`chapters/vol-{volume_padded}/ch-{chapter_padded}/Opus试写.md`
+   - Opus 报告：`chapters/vol-{volume_padded}/ch-{chapter_padded}/Opus报告.md`
+   - 缺失设定：`chapters/vol-{volume_padded}/ch-{chapter_padded}/缺失设定.md`
+4. **确定信息源优先级**：
    - 新规划模式：
      - `memory/future/00-index.md` + `memory/future/10-book.md` + `memory/future/20-threads.md` + 相关 `30-volumes/` / `40-arcs/`
-     - `chapters/ch-{prev_padded}-outline.md`
+     - `chapters/vol-{prev_volume_padded}/ch-{prev_padded}/大纲.md`
      - `memory/past.md`
-     - `chapters/ch-{prev_padded}-context.md` 只供 `novel-write` 使用，不反向主导规划
+     - `chapters/vol-{prev_volume_padded}/ch-{prev_padded}/上下文.md` 只供 `novel-write` 使用，不反向主导规划
    - 修订模式：
-     - `chapters/ch-{current_padded}-outline.md`
+     - `chapters/vol-{volume_padded}/ch-{current_padded}/大纲.md`
      - 用户明确提出的修改目标
      - `memory/future/10-book.md` + `memory/future/20-threads.md` + 相关 `30-volumes/` / `40-arcs/`
-     - `chapters/ch-{prev_padded}-outline.md`
+     - `chapters/vol-{prev_volume_padded}/ch-{prev_padded}/大纲.md`
      - `memory/past.md`
-     - `chapters/ch-{current_padded}-context.md` 只用于判断缓存是否失效
+     - `chapters/vol-{volume_padded}/ch-{current_padded}/上下文.md` 只用于判断缓存是否失效
 
 如果高优先级文件缺失，明确提示缺哪一个；不要擅自用低优先级信息替代。
 
@@ -285,7 +292,7 @@ description: |
 - 本章称呼：那少女 | ✅ 可用（短暂过渡）
 ```
 
-如果发现设定缺失，立即停止，写入 `chapters/ch-{chapter_padded}-missing.md`，并提示用户去另一个 session 用 `/novel-discuss` 补全。
+如果发现设定缺失，立即停止，写入 `chapters/vol-{volume_padded}/ch-{chapter_padded}/缺失设定.md`，并提示用户去另一个 session 用 `/novel-discuss` 补全。
 
 ### 第四步：生成第三人称精简剧情纲要
 
@@ -334,10 +341,10 @@ description: |
 
 ### 第五步：写入文件并等待确认
 
-写入 `chapters/ch-{chapter_padded}-outline.md` 后提示用户阅读：
+写入 `chapters/vol-{volume_padded}/ch-{chapter_padded}/大纲.md` 后提示用户阅读：
 
 ```text
-📋 大纲已写入 chapters/ch-{chapter_padded}-outline.md
+📋 大纲已写入 chapters/vol-{volume_padded}/ch-{chapter_padded}/大纲.md
 
 这份大纲现在是第三人称精简剧情纲要，适合你直接手动修改。
 如果需要调整，我们先确认改动边界，再更新文件。
@@ -429,7 +436,7 @@ description: |
    ⚠️ 如果下一章仍按旧计划开头，需要把第一场改成“验货/对质”
 ```
 
-如果已有 `chapters/ch-{current_padded}-context.md`，且本次修订影响了以下任一项，视为缓存可能失效：
+如果已有 `chapters/vol-{volume_padded}/ch-{current_padded}/上下文.md`，且本次修订影响了以下任一项，视为缓存可能失效：
 
 - 出场角色变化
 - 关键地点变化
@@ -442,21 +449,21 @@ description: |
 
 ### 第一步：尝试生成上下文缓存
 
-调用 context-collector agent（`subagent_type: "context-collector"`），生成 `chapters/ch-{chapter_padded}-context.md`。
+调用 context-collector agent（`subagent_type: "context-collector"`），生成 `chapters/vol-{volume_padded}/ch-{chapter_padded}/上下文.md`。
 
 ```text
 为第 {chapter} 章生成上下文缓存。
 
-大纲文件：chapters/ch-{chapter_padded}-outline.md
+大纲文件：chapters/vol-{volume_padded}/ch-{chapter_padded}/大纲.md
 
 请根据大纲中的角色、地点、物品，收集完整的上下文信息。
-将输出保存到 chapters/ch-{chapter_padded}-context.md。
+将输出保存到 chapters/vol-{volume_padded}/ch-{chapter_padded}/上下文.md。
 ```
 
 如果 context 生成失败，明确提示：
 
 ```text
-⚠️ 大纲已完成，但 chapters/ch-{chapter_padded}-context.md 尚未生成。
+⚠️ 大纲已完成，但 chapters/vol-{volume_padded}/ch-{chapter_padded}/上下文.md 尚未生成。
 后续写正文前，请重新执行 /novel-plan 或单独补跑 context 收集。
 ```
 
@@ -467,28 +474,28 @@ description: |
 执行规则：
 
 1. 必须真的写正文，不能只做静态点评
-2. 优先读取 `chapters/ch-{chapter_padded}-context.md`
+2. 优先读取 `chapters/vol-{volume_padded}/ch-{chapter_padded}/上下文.md`
 3. 试写范围优先选择**最容易暴露问题的连续剧情段落**
 4. 优先级顺序：
    - 中段转折 / 桥接段
    - 重要角色首次出场
    - 章末钩子
    - 如果以上都不明显，则试写章首切入
-5. 测试稿保存到 `chapters/ch-{chapter_padded}-opus-test.md`
-6. 反推报告保存到 `chapters/ch-{chapter_padded}-opus-report.md`
+5. 测试稿保存到 `chapters/vol-{volume_padded}/ch-{chapter_padded}/Opus试写.md`
+6. 反推报告保存到 `chapters/vol-{volume_padded}/ch-{chapter_padded}/Opus报告.md`
 
 ```text
 调用一个 Opus 档位 Agent，执行一次正文写作测试。
 
 输入文件：
-1. chapters/ch-{chapter_padded}-outline.md
-2. chapters/ch-{chapter_padded}-context.md（如存在）
+1. chapters/vol-{volume_padded}/ch-{chapter_padded}/大纲.md
+2. chapters/vol-{volume_padded}/ch-{chapter_padded}/上下文.md（如存在）
 
 任务：
 1. 从大纲中选出最容易暴露问题的连续剧情段落，优先测试转折、桥接、首次重要出场或章末钩子
 2. 基于这些剧情段落写 1000-1800 字测试正文
-3. 将测试正文保存到 chapters/ch-{chapter_padded}-opus-test.md
-4. 再基于本次试写过程，输出一份反推报告并保存到 chapters/ch-{chapter_padded}-opus-report.md
+3. 将测试正文保存到 chapters/vol-{volume_padded}/ch-{chapter_padded}/Opus试写.md
+4. 再基于本次试写过程，输出一份反推报告并保存到 chapters/vol-{volume_padded}/ch-{chapter_padded}/Opus报告.md
 
 反推报告必须回答：
 - 哪一段最难自然写开？为什么？
@@ -526,9 +533,9 @@ description: |
 ```text
 ✅ 规划完成
 
-📄 chapters/ch-{chapter_padded}-outline.md
-📄 chapters/ch-{chapter_padded}-opus-test.md（如已生成）
-📄 chapters/ch-{chapter_padded}-opus-report.md（如已生成）
+📄 chapters/vol-{volume_padded}/ch-{chapter_padded}/大纲.md
+📄 chapters/vol-{volume_padded}/ch-{chapter_padded}/Opus试写.md（如已生成）
+📄 chapters/vol-{volume_padded}/ch-{chapter_padded}/Opus报告.md（如已生成）
 
 💡 下一步：
    /novel-write XX        # 基于精简剧情纲要写正文
@@ -540,9 +547,9 @@ description: |
 ```text
 novel-bookplan → future/（故事母型 + 全书/分卷节奏）
      ↓
-novel-plan → chapters/ch-xxxx-outline.md（第三人称精简剧情纲要）
+novel-plan → chapters/vol-xx/ch-xxxx/大纲.md（第三人称精简剧情纲要）
      ↓
-novel-write → chapters/ch-xxxx.md（正文）
+novel-write → chapters/vol-xx/ch-xxxx/正文.md（正文）
      ↓
 novel-sync → past.md / future/（同步）
      ↓

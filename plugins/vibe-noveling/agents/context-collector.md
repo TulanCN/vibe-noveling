@@ -24,8 +24,8 @@ tools:
 
 在 `novel-plan` 保存大纲后，调用 `context-collector` 生成上下文缓存文件。
 
-**输入**：大纲文件路径（`chapters/ch-{chapter_padded}-outline.md`）
-**输出**：上下文缓存文件（`chapters/ch-{chapter_padded}-context.md`）
+**输入**：大纲文件路径（`chapters/vol-{volume_padded}/ch-{chapter_padded}/大纲.md`）
+**输出**：上下文缓存文件（`chapters/vol-{volume_padded}/ch-{chapter_padded}/上下文.md`）
 
 ### 模式 B：直接提供上下文（由 `novel-write` 调用）
 
@@ -46,9 +46,9 @@ tools:
 
 ### 2. 缓存检查（模式 B 优先执行）
 
-如果是模式 B（章节编号或自定义查询），先检查缓存：
+如果是模式 B（章节编号或自定义查询），先检查缓存。若调用方只提供章节编号，必须先从 `future/` 或当前上下文解析所属卷，得到 `volume_padded` 后再继续；如果无法定位所属卷，停止并返回“缺少卷信息”。
 
-1. 检查 `chapters/ch-{chapter_padded}-context.md` 是否存在
+1. 检查 `chapters/vol-{volume_padded}/ch-{chapter_padded}/上下文.md` 是否存在
 2. 如果存在，检查缓存有效性：
    - 读取缓存文件头的“生成时间”
    - 检查相关设定文件的修改时间是否晚于缓存生成时间：
@@ -94,7 +94,7 @@ python "${CLAUDE_PLUGIN_ROOT}/skills/novel-knowledge/scripts/knowledge_graph.py"
 
 ### 5. 读取大纲文件
 
-读取 `chapters/ch-{chapter_padded}-outline.md`，重点提取：
+读取 `chapters/vol-{volume_padded}/ch-{chapter_padded}/大纲.md`，重点提取：
 
 - 起：开篇设置
 - 承：剧情发展
@@ -111,7 +111,7 @@ python "${CLAUDE_PLUGIN_ROOT}/skills/novel-knowledge/scripts/knowledge_graph.py"
 
 ### 7. 持久化缓存（模式 A 或缓存失效时执行）
 
-将上下文摘要写入 `chapters/ch-{chapter_padded}-context.md`，格式见下方。
+将上下文摘要写入 `chapters/vol-{volume_padded}/ch-{chapter_padded}/上下文.md`，格式见下方。
 
 ## 收集内容
 
@@ -172,7 +172,7 @@ python "${CLAUDE_PLUGIN_ROOT}/skills/novel-knowledge/scripts/knowledge_graph.py"
 ## 收集来源
 
 - `memory/entities/` 目录下的设定文件
-- `chapters/ch-{chapter_padded}-outline.md` 大纲文件
+- `chapters/vol-{volume_padded}/ch-{chapter_padded}/大纲.md` 大纲文件
 - 已完成章节的摘要（`memory/past.md`）
 - `memory/future/00-index.md`、`10-book.md`、`20-threads.md`、相关 `30-volumes/` / `40-arcs/`
 - `memory/worldbuilding.md` 世界观设定
@@ -241,7 +241,7 @@ python "${CLAUDE_PLUGIN_ROOT}/skills/novel-knowledge/scripts/knowledge_graph.py"
 
 ## 使用时机
 
-- `novel-plan` 保存大纲后：生成上下文缓存 `chapters/ch-{chapter_padded}-context.md`
+- `novel-plan` 保存大纲后：生成上下文缓存 `chapters/vol-{volume_padded}/ch-{chapter_padded}/上下文.md`
 - `novel-write` 创作前：优先使用缓存，缓存无效时重新收集
 - 一致性检查时：由 `consistency-guard` 调用
 
@@ -252,4 +252,4 @@ python "${CLAUDE_PLUGIN_ROOT}/skills/novel-knowledge/scripts/knowledge_graph.py"
 | 纯数据搜索 | `novel-knowledge` 脚本 | `search` 命令，返回匹配的文件片段 |
 | 语义理解 | `context-collector` agent | 理解大纲设计，判断需要什么信息，组织成可用上下文 |
 | 生成上下文 | `context-collector` agent | 调用搜索 → 分析结果 → 组织输出 |
-| 上下文缓存 | `context-collector` agent | 将输出持久化为 `ch-xxxx-context.md`，避免重复收集 |
+| 上下文缓存 | `context-collector` agent | 将输出持久化为 `chapters/vol-{volume_padded}/ch-{chapter_padded}/上下文.md`，避免重复收集 |

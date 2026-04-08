@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+from __future__ import annotations
+
 """小说创作进度可视化 — 扫描项目文件，生成字数占比饼图 HTML。"""
 
 import argparse
@@ -8,18 +10,18 @@ import re
 import webbrowser
 from pathlib import Path
 
-# 项目根目录（此脚本位于 skills/novel-progress/scripts/）
-PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent.parent.parent
+# 项目根目录（此脚本位于 plugins/vibe-noveling/skills/novel-progress/scripts/）
+PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent.parent.parent.parent
 
 # 文件分类规则：(分类名, glob_pattern 列表)
 CATEGORIES = [
-    ("大纲", ["chapters/*-outline.md"]),
-    ("设定文件", ["memory/**/*.md", "chapters/*-context.md"]),
-    ("正文", ["chapters/ch-*.md"]),
+    ("大纲", ["chapters/vol-*/ch-*/大纲.md"]),
+    ("设定文件", ["memory/**/*.md", "chapters/vol-*/ch-*/上下文.md"]),
+    ("正文", ["chapters/vol-*/ch-*/正文.md"]),
 ]
 
 # 正文分类需要排除的文件（避免被大纲和上下文文件误匹配）
-EXCLUDE_PATTERNS = ["*-outline.md", "*-context.md"]
+EXCLUDE_PATTERNS = ["大纲.md", "上下文.md"]
 
 # 饼图配色
 COLORS = ["#4CAF50", "#2196F3", "#FF9800", "#9C27B0", "#F44336", "#00BCD4", "#795548"]
@@ -56,18 +58,18 @@ def classify_file(filepath: Path) -> str | None:
     """判断文件属于哪个分类，返回分类名或 None。"""
     rel = filepath.relative_to(PROJECT_ROOT).as_posix()
 
-    # 正文分类：匹配 ch-XXX.md 但排除 outline 和 context
-    if re.match(r"chapters/ch-\d+\.md$", rel):
+    # 正文分类：匹配分卷/分章目录下的 正文.md
+    if re.match(r"chapters/vol-\d+/ch-\d+/正文\.md$", rel):
         return "正文"
 
     # 大纲分类
-    if rel.startswith("chapters/") and rel.endswith("-outline.md"):
+    if re.match(r"chapters/vol-\d+/ch-\d+/大纲\.md$", rel):
         return "大纲"
 
     # 设定文件分类
     if rel.startswith("memory/") and rel.endswith(".md"):
         return "设定文件"
-    if rel.startswith("chapters/") and rel.endswith("-context.md"):
+    if re.match(r"chapters/vol-\d+/ch-\d+/上下文\.md$", rel):
         return "设定文件"
 
     return None

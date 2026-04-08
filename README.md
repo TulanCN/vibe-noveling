@@ -22,7 +22,7 @@
 |------|--------|------|
 | `/novel-init` | 初始化、新建小说 | 创建完整的项目结构和目录 |
 | `/novel-discuss` | 讨论、设计角色、世界观 | 苏格拉底式对话，支持世界观/角色/物品/势力/体系设计 |
-| `/novel-bookplan` | 全书大纲、卷结构 | Save the Cat 15 节拍全书架构规划 |
+| `/novel-bookplan` | 全书大纲、卷结构 | Save the Cat 15 节拍全书架构规划，按卷与节拍规划，不预设章节数 |
 | `/novel-plan` | 规划下一章 | 单章第三人称精简剧情纲要 + Opus 正文测试 |
 | `/novel-write` | 写章节、创作正文 | 默认全风格逐个启动写作 Agent，并按内部写作单元逐个合并最终稿 |
 | `/novel-sync` | 同步、更新状态 | 章节完成后更新知识图谱 |
@@ -128,12 +128,19 @@ your-novel/
 │       ├── 30-volumes/        # 分卷蓝图
 │       └── 40-arcs/           # arc 规划
 ├── chapters/                  # 章节目录
-│   ├── ch-XXXX-outline.md     # 精简剧情纲要
-│   ├── ch-XXXX.md             # 章节正文
-│   └── ch-XXXX-context.md     # 章节上下文
+│   └── vol-01/
+│       └── ch-0001/
+│           ├── 大纲.md        # 精简剧情纲要
+│           ├── 上下文.md      # 章节上下文
+│           ├── Opus试写.md    # 试写正文
+│           ├── Opus报告.md    # 反推报告
+│           ├── 海明威.md      # 风格中间稿
+│           └── 正文.md        # 最终正文
 ├── .snapshots/                # 版本快照
 └── templates/                 # 模板文件
 ```
+
+例如最终正文路径为 `chapters/vol-01/ch-0001/正文.md`。
 
 ## 快速开始
 

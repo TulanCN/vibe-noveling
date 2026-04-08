@@ -14,10 +14,10 @@ description: |
   默认创作全部 4 种写作风格，按风格逐个开启写作 Agent → 每个版本校对 → 按内部写作单元顺序逐个合并 → 用户确认后自动同步。
 
   【数据来源】
-  从上游 `novel-plan` 输出的 `chapters/ch-xxxx-outline.md` 读取第三人称精简剧情纲要，而不是读取显式剧情点表。
+  从上游 `novel-plan` 输出的 `chapters/vol-{volume_padded}/ch-{chapter_padded}/大纲.md` 读取第三人称精简剧情纲要，而不是读取显式剧情点表。
   在正文阶段先内部切分写作单元，再按风格逐个启动写作 Agent；写作单元只供写作阶段使用，不回写 outline。
   通过 context-collector 读取角色设定文件获取语言风格，根据角色语言风格创作台词。
-  如存在 `chapters/ch-xxxx-opus-report.md`，先读取其判定和问题点；它不是正文素材，而是写作放行条件和结构约束来源。若报告判定需先重做大纲，则停止写作并回到 `novel-plan`。
+  如存在 `chapters/vol-{volume_padded}/ch-{chapter_padded}/Opus报告.md`，先读取其判定和问题点；它不是正文素材，而是写作放行条件和结构约束来源。若报告判定需先重做大纲，则停止写作并回到 `novel-plan`。
 
   输出 2500-4000 字的网文风格正文。中间稿和最终稿都输出为连续章节正文。
 ---
@@ -25,7 +25,7 @@ description: |
 
 ## 目标
 
-根据 `novel-plan` 生成的第三人称精简剧情纲要，并结合上游 Opus 测试报告提炼出的写作约束，默认创作全部 4 种写作风格的正文版本。4 个版本不是一次性并发派发，而是按固定顺序逐个开启写作 Agent，避免同一时刻同时发出 4 个请求。每个版本经过校对后保留为中间稿。最终稿合并也不是整章一次性融合，而是按内部写作单元顺序逐个合并，再输出为连续章节正文 `chapters/ch-{编号}.md`，用户确认满意后进入同步流程。
+根据 `novel-plan` 生成的第三人称精简剧情纲要，并结合上游 Opus 测试报告提炼出的写作约束，默认创作全部 4 种写作风格的正文版本。4 个版本不是一次性并发派发，而是按固定顺序逐个开启写作 Agent，避免同一时刻同时发出 4 个请求。每个版本经过校对后保留为中间稿。最终稿合并也不是整章一次性融合，而是按内部写作单元顺序逐个合并，再输出为连续章节正文 `chapters/vol-{volume_padded}/ch-{chapter_padded}/正文.md`，用户确认满意后进入同步流程。
 
 **核心特性**：
 
@@ -71,12 +71,12 @@ description: |
 
 ```text
   第一步：获取上下文（缓存优先）
-       │  检查 ch-xxxx-context.md 是否存在且有效
+       │  检查章节目录中的 上下文.md 是否存在且有效
        │  ├─ 缓存有效 → 直接复用
        │  └─ 缓存无效 → 调用 context-collector
        ▼
   第二步：读取大纲
-       │  从 chapters/ch-xxxx-outline.md 读取精简剧情纲要
+       │  从 chapters/vol-{volume_padded}/ch-{chapter_padded}/大纲.md 读取精简剧情纲要
        ▼
   第二步 A：正文阶段内部切分
        │  从简纲中提取 6-12 个写作单元
@@ -102,14 +102,14 @@ description: |
        │  当前写作单元合并完成后，再进入下一个写作单元
        ▼
   第七步：最终稿复检
-       │  对 ch-xxxx.md 再做一轮 novel-master + consistency-guard 检查
+       │  对 chapters/vol-{volume_padded}/ch-{chapter_padded}/正文.md 再做一轮 novel-master + consistency-guard 检查
        │  执行一次定点修正 AI 味的正文后矫正
        ▼
   第八步：交付最终稿和中间稿
        │  输出最终稿路径和中间稿路径
        ▼
   第九步：用户确认后触发同步
-       │  用户通知“确认 ch-xxxx.md”
+       │  用户通知“确认 chapters/vol-{volume_padded}/ch-{chapter_padded}/正文.md”
        │  自动执行 novel-sync
        ▼
   ✅ 完成
@@ -119,7 +119,7 @@ description: |
 
 ### 1.1 检查上下文缓存
 
-首先检查 `chapters/ch-{chapter_padded}-context.md` 是否存在且有效。
+首先检查 `chapters/vol-{volume_padded}/ch-{chapter_padded}/上下文.md` 是否存在且有效。
 
 缓存有效性判断：
 
@@ -138,7 +138,7 @@ description: |
 ```text
 📖 使用上下文缓存
 
-检测到 chapters/ch-{chapter_padded}-context.md（缓存有效）
+检测到 chapters/vol-{volume_padded}/ch-{chapter_padded}/上下文.md（缓存有效）
 生成时间：{timestamp}
 设定文件无变更 → 直接复用
 ```
@@ -157,7 +157,7 @@ description: |
 
 ```text
 Agent 工具，subagent_type: context-collector
-prompt: 为第 X 章收集上下文，大纲文件：chapters/ch-{chapter_padded}-outline.md
+prompt: 为第 X 章收集上下文，大纲文件：chapters/vol-{volume_padded}/ch-{chapter_padded}/大纲.md
 ```
 
 ### 1.3 设定缺失处理
@@ -172,7 +172,7 @@ prompt: 为第 X 章收集上下文，大纲文件：chapters/ch-{chapter_padded
 
 ## 第二步：读取大纲
 
-从 `chapters/ch-{chapter_padded}-outline.md` 读取本章的简纲。
+从 `chapters/vol-{volume_padded}/ch-{chapter_padded}/大纲.md` 读取本章的简纲。
 
 **大纲关键认知**：
 
@@ -228,7 +228,7 @@ prompt: 为第 X 章收集上下文，大纲文件：chapters/ch-{chapter_padded
 
 ## 第二步 B：读取 Opus 测试报告（如存在）
 
-如果存在 `chapters/ch-{chapter_padded}-opus-report.md`，必须在正式写正文前先读取它。
+如果存在 `chapters/vol-{volume_padded}/ch-{chapter_padded}/Opus报告.md`，必须在正式写正文前先读取它。
 
 这份报告的作用有两个：
 
@@ -272,7 +272,7 @@ prompt: 为第 X 章收集上下文，大纲文件：chapters/ch-{chapter_padded
 3. **火星引力风（暴力美学+情感拉满）**
 4. **大仲马风（精密布局与戏剧交锋）**
 
-中间稿全部保留到 `chapters/` 目录，供回看、局部抽取和后续复用。
+中间稿全部保留到本章目录 `chapters/vol-{volume_padded}/ch-{chapter_padded}/`，供回看、局部抽取和后续复用。
 
 ## 第四步：逐个开启 Agent + 校对
 
@@ -298,7 +298,7 @@ prompt: 为第 X 章收集上下文，大纲文件：chapters/ch-{chapter_padded
 ## 文件写入要求
 
 你必须将最终完成的正文写入：
-`chapters/ch-{编号}-{风格简称}.md`
+`chapters/vol-{volume_padded}/ch-{chapter_padded}/{style_name}.md`
 
 ## 基本信息
 - 章节：第 {chapter} 章
@@ -406,7 +406,7 @@ prompt: 为第 X 章收集上下文，大纲文件：chapters/ch-{chapter_padded
 
 在所有风格版本通过基础校对和一致性检查后，新增“自动合并”步骤，生成最终稿：
 
-`chapters/ch-{编号}.md`
+`chapters/vol-{volume_padded}/ch-{chapter_padded}/正文.md`
 
 自动合并不是把整章一次性糅成一个版本，而是按内部写作单元顺序逐个合并。
 
@@ -434,16 +434,16 @@ prompt: 为第 X 章收集上下文，大纲文件：chapters/ch-{chapter_padded
 不要整章一次性融合，必须按内部写作单元顺序逐个合并。
 
 ## 输入文件
-- chapters/ch-{编号}-海明威.md
-- chapters/ch-{编号}-卖报小郎君.md
-- chapters/ch-{编号}-火星引力.md
-- chapters/ch-{编号}-大仲马.md
+- chapters/vol-{volume_padded}/ch-{chapter_padded}/海明威.md
+- chapters/vol-{volume_padded}/ch-{chapter_padded}/卖报小郎君.md
+- chapters/vol-{volume_padded}/ch-{chapter_padded}/火星引力.md
+- chapters/vol-{volume_padded}/ch-{chapter_padded}/大仲马.md
 
 ## 内部写作单元摘要
 {writing_units_summary}
 
 ## 输出文件
-- chapters/ch-{编号}.md
+- chapters/vol-{volume_padded}/ch-{chapter_padded}/正文.md
 
 ## 合并原则
 1. 按内部写作单元顺序逐个合并
@@ -466,7 +466,7 @@ prompt: 为第 X 章收集上下文，大纲文件：chapters/ch-{chapter_padded
 
 ## 第七步：最终稿复检
 
-对 `chapters/ch-{编号}.md` 再做一轮检查，不能只默认相信合并结果。
+对 `chapters/vol-{volume_padded}/ch-{chapter_padded}/正文.md` 再做一轮检查，不能只默认相信合并结果。
 
 检查顺序：
 
@@ -491,11 +491,11 @@ prompt: 为第 X 章收集上下文，大纲文件：chapters/ch-{chapter_padded
 
 默认交付以下文件：
 
-- 最终稿：`chapters/ch-{编号}.md`
-- 中间稿：`chapters/ch-{编号}-海明威.md`
-- 中间稿：`chapters/ch-{编号}-卖报小郎君.md`
-- 中间稿：`chapters/ch-{编号}-火星引力.md`
-- 中间稿：`chapters/ch-{编号}-大仲马.md`
+- 最终稿：`chapters/vol-{volume_padded}/ch-{chapter_padded}/正文.md`
+- 中间稿：`chapters/vol-{volume_padded}/ch-{chapter_padded}/海明威.md`
+- 中间稿：`chapters/vol-{volume_padded}/ch-{chapter_padded}/卖报小郎君.md`
+- 中间稿：`chapters/vol-{volume_padded}/ch-{chapter_padded}/火星引力.md`
+- 中间稿：`chapters/vol-{volume_padded}/ch-{chapter_padded}/大仲马.md`
 
 交付说明中应简短说明：
 
@@ -516,7 +516,7 @@ prompt: 为第 X 章收集上下文，大纲文件：chapters/ch-{chapter_padded
 
 - 自动合并完成后，不直接同步知识图谱
 - 用户确认最终稿满意后，再执行：`/novel-sync chapter {chapter}`
-- 用户确认语句示例：`确认 ch-{chapter_padded}.md`
+- 用户确认语句示例：`确认 chapters/vol-{volume_padded}/ch-{chapter_padded}/正文.md`
 
 ## 输出格式
 
@@ -533,20 +533,23 @@ prompt: 为第 X 章收集上下文，大纲文件：chapters/ch-{chapter_padded
 
 ```text
 chapters/
-├── ch-0001-outline.md          # 第 1 章大纲（精简剧情纲要）
-├── ch-0001-海明威.md           # 第 1 章 - 风格版本
-├── ch-0001-卖报小郎君.md        # 第 1 章 - 风格版本
-├── ch-0001-火星引力.md          # 第 1 章 - 风格版本
-├── ch-0001-大仲马.md            # 第 1 章 - 风格版本
-├── ch-0001.md                   # 第 1 章 - 最终合并版本
+├── vol-01/
+│   └── ch-0001/
+│       ├── 大纲.md
+│       ├── 上下文.md
+│       ├── 海明威.md
+│       ├── 卖报小郎君.md
+│       ├── 火星引力.md
+│       ├── 大仲马.md
+│       └── 正文.md
 ```
 
 ### 文件写入时机
 
-1. **创作阶段**：每个 Agent 自检通过后立即将正文写入 `chapters/ch-{编号}-{风格简称}.md`
-2. **合并阶段**：按写作单元顺序读取全部中间稿的对应内容，逐个合并生成最终稿 `chapters/ch-{编号}.md`
+1. **创作阶段**：每个 Agent 自检通过后立即将正文写入 `chapters/vol-{volume_padded}/ch-{chapter_padded}/{style_name}.md`
+2. **合并阶段**：按写作单元顺序读取全部中间稿的对应内容，逐个合并生成最终稿 `chapters/vol-{volume_padded}/ch-{chapter_padded}/正文.md`
 3. **交付阶段**：默认交付最终稿路径和各中间稿路径，必要时再展示局部正文
-4. **同步阶段**：用户确认 `ch-{编号}.md` 满意后，执行 `/novel-sync chapter {chapter}`
+4. **同步阶段**：用户确认 `正文.md` 满意后，执行 `/novel-sync chapter {chapter}`
 5. **保留阶段**：各风格中间稿默认保留，供回看、回滚和局部抽取
 
 ## 关键原则
@@ -572,12 +575,12 @@ chapters/
    - 大仲马（{word_count} 字）
 
 🧩 已自动合并最终稿：
-   - chapters/ch-{chapter_padded}.md
+   - chapters/vol-{volume_padded}/ch-{chapter_padded}/正文.md
    - 最终稿输出为连续章节正文
 
 🔍 质量检查：全部通过
 
 💡 下一步：
    - 如需回看，可直接对照 4 个中间稿
-   - 若最终稿确认无误，直接回复：确认 ch-{chapter_padded}.md（将自动执行同步）
+   - 若最终稿确认无误，直接回复：确认 chapters/vol-{volume_padded}/ch-{chapter_padded}/正文.md（将自动执行同步）
 ```

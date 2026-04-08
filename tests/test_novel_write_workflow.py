@@ -1,15 +1,80 @@
 import unittest
+import importlib.util
 from pathlib import Path
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
+NOVEL_INIT = REPO_ROOT / "plugins" / "vibe-noveling" / "skills" / "novel-init" / "SKILL.md"
 NOVEL_PLAN = REPO_ROOT / "plugins" / "vibe-noveling" / "skills" / "novel-plan" / "SKILL.md"
+NOVEL_BOOKPLAN = REPO_ROOT / "plugins" / "vibe-noveling" / "skills" / "novel-bookplan" / "SKILL.md"
+BOOKPLAN_HIERARCHY = REPO_ROOT / "plugins" / "vibe-noveling" / "skills" / "novel-bookplan" / "references" / "stc-hierarchy.md"
 NOVEL_WRITE = REPO_ROOT / "plugins" / "vibe-noveling" / "skills" / "novel-write" / "SKILL.md"
+NOVEL_SYNC = REPO_ROOT / "plugins" / "vibe-noveling" / "skills" / "novel-sync" / "SKILL.md"
+NOVEL_PROGRESS = REPO_ROOT / "plugins" / "vibe-noveling" / "skills" / "novel-progress" / "SKILL.md"
+NOVEL_PROGRESS_SCRIPT = REPO_ROOT / "plugins" / "vibe-noveling" / "skills" / "novel-progress" / "scripts" / "progress_chart.py"
+CONTEXT_COLLECTOR = REPO_ROOT / "plugins" / "vibe-noveling" / "agents" / "context-collector.md"
 NOVEL_MASTER = REPO_ROOT / "plugins" / "vibe-noveling" / "skills" / "novel-master" / "SKILL.md"
 README = REPO_ROOT / "README.md"
 
 
 class NovelWriteWorkflowTests(unittest.TestCase):
+    def test_chapter_artifacts_live_in_volume_chapter_directories(self) -> None:
+        novel_init = NOVEL_INIT.read_text(encoding="utf-8")
+        novel_plan = NOVEL_PLAN.read_text(encoding="utf-8")
+        novel_write = NOVEL_WRITE.read_text(encoding="utf-8")
+        novel_sync = NOVEL_SYNC.read_text(encoding="utf-8")
+        novel_progress = NOVEL_PROGRESS.read_text(encoding="utf-8")
+        context_collector = CONTEXT_COLLECTOR.read_text(encoding="utf-8")
+        readme = README.read_text(encoding="utf-8")
+
+        self.assertIn("chapters/vol-01/ch-0001/正文.md", novel_init)
+        self.assertIn("chapters/vol-{volume_padded}/ch-{chapter_padded}/大纲.md", novel_plan)
+        self.assertIn("chapters/vol-{volume_padded}/ch-{chapter_padded}/上下文.md", novel_plan)
+        self.assertIn("chapters/vol-{volume_padded}/ch-{chapter_padded}/正文.md", novel_write)
+        self.assertIn("chapters/vol-{volume_padded}/ch-{chapter_padded}/上下文.md", context_collector)
+        self.assertIn("chapters/vol-{volume_padded}/ch-{chapter_padded}/正文.md", novel_sync)
+        self.assertIn("chapters/vol-xx/ch-xxxx/正文.md", novel_progress)
+        self.assertIn("chapters/vol-01/ch-0001/正文.md", readme)
+
+        self.assertNotIn("chapters/ch-{chapter_padded}-outline.md", novel_plan)
+        self.assertNotIn("chapters/ch-{chapter_padded}-context.md", context_collector)
+        self.assertNotIn("chapters/ch-{编号}.md", novel_write)
+        self.assertNotIn("chapters/ch-{chapter_padded}.md", novel_sync)
+
+    def test_novel_progress_classifies_volume_chapter_directory_files(self) -> None:
+        spec = importlib.util.spec_from_file_location("progress_chart", NOVEL_PROGRESS_SCRIPT)
+        self.assertIsNotNone(spec)
+        self.assertIsNotNone(spec.loader)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+
+        self.assertEqual(
+            module.classify_file(REPO_ROOT / "chapters" / "vol-01" / "ch-0001" / "正文.md"),
+            "正文",
+        )
+        self.assertEqual(
+            module.classify_file(REPO_ROOT / "chapters" / "vol-01" / "ch-0001" / "大纲.md"),
+            "大纲",
+        )
+        self.assertEqual(
+            module.classify_file(REPO_ROOT / "chapters" / "vol-01" / "ch-0001" / "上下文.md"),
+            "设定文件",
+        )
+
+    def test_novel_bookplan_avoids_chapter_count_coupling(self) -> None:
+        content = NOVEL_BOOKPLAN.read_text(encoding="utf-8")
+        hierarchy = BOOKPLAN_HIERARCHY.read_text(encoding="utf-8")
+        readme = README.read_text(encoding="utf-8")
+
+        self.assertIn("全书规划阶段不预设章节数", content)
+        self.assertIn("职责段 / 卷内位置 / 状态变化", content)
+        self.assertNotIn("对应的大致章节范围", content)
+        self.assertNotIn("| Beat | 对应卷 | 大致章节 | 关键事件 | 状态 |", content)
+        self.assertNotIn("第 1 段（开卷 3-5 章）", content)
+        self.assertNotIn("第 1 段（1-4 章）", hierarchy)
+        self.assertNotIn("第 2 段（5-10 章）", hierarchy)
+        self.assertIn("按卷与节拍规划，不预设章节数", readme)
+
     def test_novel_plan_uses_concise_third_person_outline(self) -> None:
         content = NOVEL_PLAN.read_text(encoding="utf-8")
 

@@ -57,10 +57,10 @@
 ```text
 为第 {chapter} 章生成上下文缓存。
 
-大纲文件：chapters/ch-{chapter_padded}-outline.md
+大纲文件：chapters/vol-{volume_padded}/ch-{chapter_padded}/大纲.md
 
 请根据大纲中的角色、地点、物品，收集完整的上下文信息。
-将输出保存到 chapters/ch-{chapter_padded}-context.md。
+将输出保存到 chapters/vol-{volume_padded}/ch-{chapter_padded}/上下文.md。
 ```
 
 **context-collector 会自动**：
@@ -70,7 +70,7 @@
 3. 读取设定文件
 4. 读取 `past.md` 最近剧情摘要
 5. 读取相关 future/ 线程与卷卡
-6. 输出上下文缓存文件到 `chapters/ch-{chapter_padded}-context.md`
+6. 输出上下文缓存文件到 `chapters/vol-{volume_padded}/ch-{chapter_padded}/上下文.md`
 
 ## Opus 正文写作测试
 
@@ -80,12 +80,12 @@
 
 **输出文件**：
 
-- 测试正文：`chapters/ch-{chapter_padded}-opus-test.md`
-- 反推报告：`chapters/ch-{chapter_padded}-opus-report.md`
+- 测试正文：`chapters/vol-{volume_padded}/ch-{chapter_padded}/Opus试写.md`
+- 反推报告：`chapters/vol-{volume_padded}/ch-{chapter_padded}/Opus报告.md`
 
 **测试规则**：
 
-1. 优先读取 `chapters/ch-{chapter_padded}-context.md`
+1. 优先读取 `chapters/vol-{volume_padded}/ch-{chapter_padded}/上下文.md`
 2. 如果 context 缺失，允许降级为 outline-only 试写，但报告顶部必须写 `置信度：低`
 3. 试写范围优先选取最容易暴露问题的连续剧情段落
 4. 测试正文必须是真正文，不少于 1000 字
@@ -99,7 +99,7 @@
 
 ## 大纲保存格式
 
-将完整的章节简纲保存到 `chapters/ch-xxxx-outline.md`，格式如下：
+将完整的章节简纲保存到 `chapters/vol-xx/ch-xxxx/大纲.md`，格式如下：
 
 ```markdown
 # 第 X 章大纲：[标题]
@@ -166,7 +166,7 @@
 
 ## 修订模式输出
 
-当 `novel-plan` 是基于已有 outline 做调整时，除了更新 `chapters/ch-xxxx-outline.md`，还要在对话中输出一份**修订摘要**，方便用户快速审阅本次改动。
+当 `novel-plan` 是基于已有 outline 做调整时，除了更新 `chapters/vol-xx/ch-xxxx/大纲.md`，还要在对话中输出一份**修订摘要**，方便用户快速审阅本次改动。
 
 **输出格式**：
 
@@ -196,4 +196,4 @@
 2. 结束目标是否仍符合本章节奏职责
 3. 伏笔计划是否需要延期 / 改回收位置
 4. 涉及角色列表是否需要增删
-5. 现有 `ch-xxxx-context.md` 是否失效
+5. 现有 `上下文.md` 是否失效

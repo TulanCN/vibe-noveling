@@ -3,7 +3,7 @@ name: novel-sync
 description: |
   同步状态。当章节通过当前工作流中的一致性检查并完成人工审核后，需要更新知识图谱和剧情摘要时触发。
 
-  【必须触发】用户说：同步、sync、更新状态、检查通过后更新、章节完成同步、novel-sync、更新知识图谱、更新past、同步一下、已合并 ch-xxxx.md、我合并完了。
+  【必须触发】用户说：同步、sync、更新状态、检查通过后更新、章节完成同步、novel-sync、更新知识图谱、更新past、同步一下、已合并正文、我合并完了。
 
   【关键区分】如果用户要写正文→用novel-write；如果用户要检查一致性→使用当前 session 中的 consistency-guard 或内置检查流程，而不是依赖已经废弃的独立检查 skill；如果用户要更新检查通过后的状态→用本技能。
 ---
@@ -63,8 +63,9 @@ novel-write（下一章）
 ## 任务清单
 
 ### 1. 更新剧情摘要（past.md）
-- 优先读取章节文件 `chapters/ch-{chapter_padded}.md`（例如 `chapters/ch-0011.md`）
-- 若不存在，再回退读取 `chapters/{chapter}.md`（兼容旧命名）
+- 先从 `memory/future/00-index.md`、相关卷卡或当前上下文定位 `volume_padded`
+- 若无法定位所属卷，立即停止并返回“缺少卷信息，无法定位章节目录”
+- 读取章节文件 `chapters/vol-{volume_padded}/ch-{chapter_padded}/正文.md`
 - 提取核心事件、关键情节、角色变化、伏笔埋设
 - 追加摘要到 memory/past.md（格式参考已有条目）
 - 摘要控制在 100 字以内
@@ -79,7 +80,7 @@ novel-write（下一章）
 
 #### 2.2 章节伏笔追踪表（新增）
 - 读取 `memory/future/90-sync-tracker.md`
-- 读取当前章 outline 文件 `chapters/ch-{chapter_padded}-outline.md`
+- 读取当前章 outline 文件 `chapters/vol-{volume_padded}/ch-{chapter_padded}/大纲.md`
 - 提取「伏笔计划」表格中的所有伏笔
 - **转移待回收伏笔**：对于状态为「⏳ 待回收」且**尚未移交**的伏笔：
   - 追加到 `memory/future/90-sync-tracker.md`（如果文件不存在则创建）
@@ -99,8 +100,8 @@ novel-write（下一章）
 - 使用 Skill 工具：skill="novel-knowledge", args="rebuild"
 
 ### 5. 更新 CLAUDE.md 创作进度
-- 统计 chapters/ 目录下 .md 文件数量 → 已完成章节
-- 读取最新章节大纲 `chapters/ch-{chapter_padded}-outline.md` → 当前章节标题
+- 统计 `chapters/vol-*/ch-*/正文.md` 文件数量 → 已完成章节
+- 读取最新章节大纲 `chapters/vol-{volume_padded}/ch-{chapter_padded}/大纲.md` → 当前章节标题
 - 使用 Edit 工具替换 CLAUDE.md 中 ## 创作进度 下方的内容
 
 ## 输出要求

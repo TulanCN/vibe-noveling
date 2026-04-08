@@ -254,7 +254,7 @@ project/
 - `setting-todo.md` - 设定待办清单（仅记录待补完设定）
 
 ### chapters/ - 章节目录
-存放小说正文和章节大纲，按章节编号命名（如 ch-001.md、ch-001-outline.md）
+按分卷/分章目录存放章节产物，例如 `chapters/vol-01/ch-0001/正文.md`、`chapters/vol-01/ch-0001/大纲.md`
 
 ### templates/ - 模板文件
 - `chapter-template.md` - 章节正文模板
@@ -305,7 +305,7 @@ project/
 
 📁 已创建目录结构：
    memory/      - 设定文件
-   chapters/    - 章节正文和大纲
+   chapters/    - 分卷/分章章节目录（如 chapters/vol-01/ch-0001/正文.md）
    templates/   - 模板文件
    .snapshots/  - 版本管理
 
