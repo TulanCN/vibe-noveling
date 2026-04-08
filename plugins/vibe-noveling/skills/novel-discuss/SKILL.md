@@ -14,7 +14,7 @@ description: |
   - 体系相关（修炼体系、能力体系、规则体系、自洽性检查）→ 读取 references/concept-design.md
   - 自由讨论（剧情走向、方案对比、通用决策）→ 使用下方的通用讨论框架
 
-  核心方法：苏格拉底式对话，每次提供3个差异化方案，记录重要决定。
+  核心方法：苏格拉底式对话，每次提供3个差异化方案，记录重要决定；如果讨论收束为已确认的未来剧情规划，还要同步写入 `memory/future/` 对应文件。
 ---
 
 # 创作讨论与设计
@@ -66,6 +66,29 @@ description: |
 - `memory/discussions/` — 按讨论批次保存的独立讨论报告（优先读取最近相关文件）
 
 如文件不存在则跳过。
+
+## 第四步：判断是否需要同步 future
+
+无论进入的是自由讨论还是某个 reference 流程，讨论收束后都必须做一次落盘分类：
+
+- 设定类结论：写入对应 entity 文件 / `memory/worldbuilding.md` / `memory/past.md`
+- 讨论纪要：写入 `memory/discussions/` 与 `memory/discussions.md`
+- 未来规划：写入 `memory/future/` 对应文件
+
+### future 同步规则
+
+如果讨论结果形成了已确认的未来规划，除了写入 `memory/discussions/` 和 `memory/discussions.md`，还必须同步更新 `memory/future/` 对应文件。
+
+- 全书级方向 / 终局 / 长期困境 → `memory/future/10-book.md`
+- 长期主线、伏笔、回收条件 → `memory/future/20-threads.md`
+- 某一卷的目标、职责段、关键状态变化 → `memory/future/30-volumes/vol-xx.md`
+- 某个 arc 的中程推进、阶段性对抗、预期转折 → `memory/future/40-arcs/` 对应文件
+
+### future 同步边界
+
+- 只写用户已经确认的结论，不写尚未选定的备选方案
+- 只补本次讨论直接涉及的条目，不顺手重写整套 future 结构
+- 如果讨论已经上升为全书级重排、跨多卷重构或系统性整理 future，提示用户切到 `/novel-bookplan`
 
 ---
 
@@ -127,11 +150,13 @@ description: |
 ### 5. 确认并记录
 
 重要讨论必须按“单次讨论 = 单独文件”记录，不要再把完整报告直接写进同一个文件。
+如果最终结论已经落到未来剧情、卷计划或 arc 规划，不能只记录讨论报告，必须同步更新 `memory/future/`。
 
 #### 记录位置
 
 - 完整讨论报告：写入 `memory/discussions/`
 - 讨论索引：追加摘要到 `memory/discussions.md`
+- 若形成已确认的未来规划：同步写入 `memory/future/` 对应文件
 - 若 `memory/discussions/` 不存在，先创建目录再写入
 
 #### 文件命名规则

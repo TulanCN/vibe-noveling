@@ -5,6 +5,7 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 NOVEL_INIT = REPO_ROOT / "plugins" / "vibe-noveling" / "skills" / "novel-init" / "SKILL.md"
+NOVEL_DISCUSS = REPO_ROOT / "plugins" / "vibe-noveling" / "skills" / "novel-discuss" / "SKILL.md"
 NOVEL_PLAN = REPO_ROOT / "plugins" / "vibe-noveling" / "skills" / "novel-plan" / "SKILL.md"
 NOVEL_BOOKPLAN = REPO_ROOT / "plugins" / "vibe-noveling" / "skills" / "novel-bookplan" / "SKILL.md"
 BOOKPLAN_HIERARCHY = REPO_ROOT / "plugins" / "vibe-noveling" / "skills" / "novel-bookplan" / "references" / "stc-hierarchy.md"
@@ -75,6 +76,16 @@ class NovelWriteWorkflowTests(unittest.TestCase):
         self.assertNotIn("第 2 段（5-10 章）", hierarchy)
         self.assertIn("按卷与节拍规划，不预设章节数", readme)
 
+    def test_novel_discuss_syncs_confirmed_future_decisions(self) -> None:
+        content = NOVEL_DISCUSS.read_text(encoding="utf-8")
+
+        self.assertIn("如果讨论结果形成了已确认的未来规划", content)
+        self.assertIn("除了写入 `memory/discussions/` 和 `memory/discussions.md`，还必须同步更新 `memory/future/` 对应文件", content)
+        self.assertIn("全书级方向 / 终局 / 长期困境", content)
+        self.assertIn("长期主线、伏笔、回收条件", content)
+        self.assertIn("某一卷的目标、职责段、关键状态变化", content)
+        self.assertIn("某个 arc 的中程推进、阶段性对抗、预期转折", content)
+
     def test_novel_plan_uses_concise_third_person_outline(self) -> None:
         content = NOVEL_PLAN.read_text(encoding="utf-8")
 
@@ -82,6 +93,16 @@ class NovelWriteWorkflowTests(unittest.TestCase):
         self.assertIn("不再输出剧情点切分", content)
         self.assertNotIn("将选定的方案细切为 10-20 个剧情点", content)
         self.assertNotIn("> ✏️ 写作提示", content)
+
+    def test_novel_plan_requires_plot_point_5w1h_alignment(self) -> None:
+        content = NOVEL_PLAN.read_text(encoding="utf-8")
+
+        self.assertIn("拆成 3-8 个小剧情点", content)
+        self.assertIn("Who / What / Why / Where / When / How", content)
+        self.assertIn("小剧情点对齐卡", content)
+        self.assertIn("先确认对齐卡，再生成正式大纲", content)
+        self.assertIn("不写入 `大纲.md`", content)
+        self.assertIn("只对新增、改写或受波及的小剧情点重做 `5W1H`", content)
 
     def test_novel_write_defaults_to_all_styles(self) -> None:
         content = NOVEL_WRITE.read_text(encoding="utf-8")
@@ -117,6 +138,7 @@ class NovelWriteWorkflowTests(unittest.TestCase):
         self.assertIn("按内部写作单元逐个合并", content)
         self.assertIn("自动合并生成最终稿", content)
         self.assertIn("精简剧情纲要", content)
+        self.assertIn("先澄清每个小剧情点的 5W1H", content)
         self.assertIn("正文阶段内部切分", content)
         self.assertNotIn("默认全风格并行写作 + 自动合并", content)
         self.assertNotIn("场景化大纲", content)
