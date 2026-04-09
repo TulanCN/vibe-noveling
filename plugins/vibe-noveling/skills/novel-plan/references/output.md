@@ -83,6 +83,16 @@
 - 测试正文：`chapters/vol-{volume_padded}/ch-{chapter_padded}/Opus试写.md`
 - 反推报告：`chapters/vol-{volume_padded}/ch-{chapter_padded}/Opus报告.md`
 
+**用户反馈方式**：
+
+- `Opus报告.md` 的问题必须完整保存到 `chapters/vol-{volume_padded}/ch-{chapter_padded}/Opus报告.md`
+- 面向用户时不要整包转述报告，而是把问题整理为待确认队列后逐个确认
+- 一次只处理 1 个问题
+- 每个问题都要附 2-3 个修法选项，并给出推荐方案
+- 当前问题没确认前，不进入下一个问题
+- 只要待确认问题还没清空，就不要直接鼓励用户进入 `/novel-write`
+- 如果当前问题已经足以判定应先回到 `/novel-plan --revise`，就在该问题确认后立即分流
+
 **测试规则**：
 
 1. 优先读取 `chapters/vol-{volume_padded}/ch-{chapter_padded}/上下文.md`
