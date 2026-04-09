@@ -10,7 +10,9 @@
 
 import argparse
 import json
+import os
 import shutil
+import subprocess
 import sys
 from datetime import datetime
 from pathlib import Path
@@ -22,11 +24,33 @@ SNAPSHOTS_DIR = ".snapshots"
 
 
 def get_project_root() -> Path:
-    """获取项目根目录"""
-    # 脚本在 skills/novel-snapshot/scripts/ 下
-    script_path = Path(__file__).resolve()
-    # 向上 4 级到达项目根目录
-    return script_path.parents[4]
+    """获取项目根目录
+
+    优先级：
+    1. 环境变量 SNAPSHOT_PROJECT_ROOT（显式指定）
+    2. git 仓库根目录（git rev-parse --show-toplevel）
+    3. 当前工作目录（cwd）
+    """
+    # 1. 环境变量显式指定
+    env_root = os.environ.get("SNAPSHOT_PROJECT_ROOT")
+    if env_root:
+        root = Path(env_root).resolve()
+        if root.is_dir():
+            return root
+
+    # 2. git 仓库根目录
+    try:
+        result = subprocess.run(
+            ["git", "rev-parse", "--show-toplevel"],
+            capture_output=True, text=True, timeout=5
+        )
+        if result.returncode == 0:
+            return Path(result.stdout.strip()).resolve()
+    except (FileNotFoundError, subprocess.TimeoutExpired):
+        pass
+
+    # 3. 回退到当前工作目录
+    return Path.cwd().resolve()
 
 
 def get_snapshots_dir() -> Path:
