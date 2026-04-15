@@ -1,6 +1,7 @@
 ---
 name: context-collector
 description: 上下文收集器，为章节写作收集相关设定和背景，并生成可复用的 context 缓存
+model: sonnet
 tools:
   - Read
   - Grep

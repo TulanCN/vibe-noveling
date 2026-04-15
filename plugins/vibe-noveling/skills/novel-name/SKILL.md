@@ -1,11 +1,18 @@
 ---
 name: novel-name
-description: |
-  生成角色名、功法名、门派名、物品名、灵兽名、地点名、丹药名、法号名。支持稀有度体系和项目去重。被其他 skill 调用。
-internal: true
+description: 当其他 skill 或 agent 需要批量生成中文风格名称候选时使用。
+when_to_use: |
+  仅供其他 skill 或 agent 调用，用于生成角色名、功法名、门派名、物品名、灵兽名、地点名、丹药名、法号名等候选。
+  需要项目级去重、稀有度控制或风格化命名时优先使用本工具。
+user-invocable: false
 invokes: {SKILL_DIR}/tools/name_generator.py
 ---
 # 命名生成器 v2
+
+## 调用约定
+
+- 仅供其他 skill 或 agent 调用，不直接面向用户入口
+- 负责出候选名字，不负责决定哪个名字最终落地
 
 ## 用途
 

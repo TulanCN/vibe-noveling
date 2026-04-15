@@ -1,16 +1,19 @@
 ---
 name: novel-knowledge
-description: |
-  搜索和更新知识图谱
-
-  【内部工具】仅被其他 skill 调用，不直接响应用户。
-
-  提供基础的搜索和索引功能。高级语义理解（如生成上下文）由 context-collector agent 完成。
-internal: true
+description: 当其他 skill 或 agent 需要搜索、更新或重建小说知识图谱时使用。
+when_to_use: |
+  仅供其他 skill 或 agent 调用，用于实体搜索、关系查询、标签查询、索引重建等底层数据访问。
+  高级语义理解和上下文拼装交给 `context-collector`。
+user-invocable: false
 invokes: {SKILL_DIR}/scripts/knowledge_graph.py
 ---
 
 # 知识图谱工具
+
+## 调用约定
+
+- 仅供其他 skill 或 agent 调用，不直接面向用户入口
+- 本工具负责数据访问，不负责高层语义判断和上下文拼装
 
 ## 用途
 

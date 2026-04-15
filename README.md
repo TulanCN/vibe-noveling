@@ -14,15 +14,15 @@
 
 ## 特性
 
-- **12 个专业技能 + 2 个内置子 Agent** — 覆盖初始化、讨论、规划、写作、检查、同步全流程；其中 `booming` 负责剧情爆破，`fuck-it` 负责单章同终点加戏
+- **12 个专业技能 + 7 个内置子 Agent** — 覆盖初始化、讨论、规划、写作、检查、同步全流程；其中 `booming` 负责剧情爆破，`fuck-it` 负责单章同终点加戏
 - **知识图谱驱动** — 自动管理角色、地点、物品、势力等设定，支持搜索和关系追踪
 - **Save the Cat 剧情架构** — 内置 15 节拍故事母型，支持全书/分卷/单章三层规划
 - **手动剧情爆破模式** — `booming` 主要给 `novel-discuss` 用；当你觉得剧情太平、不够炸、想强行掀桌时，先用 `booming`；默认给 3 套高烈度爆破走向，至少一套必须真正掀桌
 - **同终点单章加戏模式** — `fuck-it` 主要给 `novel-discuss` 和 `novel-plan` 用；当你不想改本章结束目标、只想把单章内部写得更戏剧、更夸张、更有漫画感时，先用 `fuck-it`；默认给 3 套同终点强化方案，但会先过一遍内置的 15 种单章加戏方向，再从中挑 3 种，且每套都必须有漫画感
 - **逐点澄清后再落大纲** — `/novel-plan` 会先澄清每个小剧情点的 5W1H，再产出 `剧情思路卡 + 可写场景纲要` 的双层大纲
-- **默认全风格逐个启动写作 Agent + 自动合并** — 基于双层大纲在正文阶段细切为固定 20 个剧情点，按风格顺序拉起 5 个写作 Agent；5 个风格稿都显性保留剧情点标题，最终稿按剧情点逐点择优并在标题处标记来源风格
+- **默认全风格逐个调用 writer subagent + 自动合并** — 基于双层大纲在正文阶段细切为固定 20 个剧情点，按风格顺序逐个调用 5 个 writer subagent；5 个风格稿都显性保留剧情点标题，最终稿按剧情点逐点择优并在标题处标记来源风格
 - **规划期强制反思 + 爽点检查** — `novel-plan` 内置结构层自检，先在大纲阶段拦住平淡和失效推进
-- **正文期 AI 味检测** — `novel-write` 内置 27 项文本质检与最终稿文风矫正，其中新增检测项覆盖通用 humanizer 型 AI 腔清理
+- **正文期 AI 味检测 + 润色阶段** — `novel-write` 内置 27 项文本质检与最终稿文风矫正；最终稿合并后先做一致性校验，再做正文 AI 味检测，最后再执行一轮独立润色
 - **命名生成器** — 支持角色、功法、门派、物品等 8 类命名，带稀有度体系
 - **进度可视化** — 自动生成字数统计饼图
 - **快照管理** — 安全的版本备份与回滚
@@ -38,7 +38,7 @@
 | `/fuck-it`         | fuck it、fuck-it、单章加戏 | 同终点单章加戏模式，主要给 `novel-discuss` 和 `novel-plan` 用；不改本章结束目标，默认给 3 套同终点强化方案，但会先过一遍内置的 15 种单章加戏方向，再从中挑 3 种，而且每套都必须有漫画感，选中后直接收束进当前规划 |
 | `/novel-bookplan`  | 全书大纲、卷结构       | Save the Cat 15 节拍全书架构规划，按卷与节拍规划，不预设章节数                                            |
 | `/novel-plan`      | 规划下一章             | 先澄清每个小剧情点的 5W1H，再生成 `剧情思路卡 + 可写场景纲要` 的双层大纲 + Opus 正文测试，并内置规划期强制反思与爽点检查 |
-| `/novel-write`     | 写章节、创作正文       | 默认全风格逐个启动 5 个写作 Agent，正文阶段细切为固定 20 个剧情点；5 个风格稿都显性保留剧情点标题，最终稿按剧情点逐点择优并标记来源风格，内置 27 项 AI 味检测与最终稿文风矫正，其中检测项 22-27 覆盖通用 humanizer 型 AI 腔清理 |
+| `/novel-write`     | 写章节、创作正文       | 默认全风格逐个调用 5 个 writer subagent，正文阶段细切为固定 20 个剧情点；5 个风格稿都显性保留剧情点标题，最终稿按剧情点逐点择优并标记来源风格，合并后先做最终稿一致性校验，再做 27 项 AI 味检测与最终稿文风矫正，最后再执行一轮独立润色 |
 | `/novel-sync`      | 同步、更新状态         | 章节完成后更新知识图谱                                                                                    |
 | `/novel-knowledge` | （内部调用）           | 知识图谱：搜索/创建/更新实体                                                                              |
 | `/novel-name`      | 命名、取名             | 8 类命名生成器（Python 脚本）                                                                             |
@@ -51,6 +51,11 @@
 | --------------------- | ------------------------------------------------------------- |
 | `context-collector` | 为 `novel-plan` / `novel-write` 收集并缓存章节上下文      |
 | `consistency-guard` | 为 `novel-write` 提供一致性检查，替代已废弃的独立检查 skill |
+| `writer-hemingway` | 为 `novel-write` 产出海明威风中间稿，负责极简硬派文风 |
+| `writer-maibaoxiaolangjun` | 为 `novel-write` 产出卖报小郎君风中间稿，负责轻悬疑群像推进 |
+| `writer-zhouzi` | 为 `novel-write` 产出会说话的肘子风中间稿，负责现代快节奏战斗与临场决断 |
+| `writer-dazhongma` | 为 `novel-write` 产出大仲马风中间稿，负责精密布局与戏剧交锋 |
+| `writer-banter` | 为 `novel-write` 产出吐槽口语风中间稿，负责主角反应与口语提气 |
 
 ## 工作流
 
@@ -63,7 +68,7 @@
     ↓
 /novel-plan          →  先澄清每个小剧情点的 5W1H，再生成双层大纲（剧情思路卡 + 可写场景纲要）+ 内置规划期强制反思与爽点检查
     ↓
-/novel-write         →  正文阶段细切为固定 20 个剧情点 + 默认全风格逐个启动 5 个写作 Agent + 最终稿按剧情点逐点择优并标记来源风格 + 内置 AI 味检测与一致性检查
+/novel-write         →  正文阶段细切为固定 20 个剧情点 + 默认全风格逐个调用 5 个 writer subagent + 最终稿按剧情点逐点择优并标记来源风格 + 合并后先做一致性校验，再做正文 AI 味检测，最后再做独立润色
     ↓
 生成最终稿          →  自动合并生成最终稿，并保留各风格中间稿供回看
     ↓
@@ -203,12 +208,12 @@
 1. 读取 `大纲.md`、`上下文.md`、`Opus报告.md`
 2. 优先读取 `剧情思路卡` 和 `可写场景纲要`；如果当前章节还是旧结构，再降级兼容 `第三人称精简剧情纲要`
 3. 在正文阶段细切为固定 20 个剧情点，这个切分不回写 outline，但会直接成为正文的显性核对骨架
-4. 按固定顺序逐个启动 5 个风格写作 Agent，而不是一次性全并发
+4. 按固定顺序逐个调用 5 个 writer subagent，而不是一次性全并发
 5. 5 个风格稿都显性保留剧情点标题，便于横向对照
 6. 最终稿按剧情点逐点择优，每个剧情点只选 1 个来源版本
 7. 如果某个剧情点角色活气不够，会自动从吐槽口语风里选取提气句群对应的版本作为优先候选
 8. 最终稿在标题处标记来源风格，例如 `【剧情点07：雨巷试探｜来源：大仲马】`
-9. 完成后做一致性检查和最终复检；最终复检会执行 27 项 AI 味检测，其中检测项 22-27 负责清理意义拔高、宣传腔和伪深刻分析等通用 humanizer 型 AI 腔
+9. 最终稿合并后，先做最终稿一致性校验，再做正文 AI 味检测与定点修正；AI 味复检会执行 27 项检测，其中会统一检查各类过渡性词语和短语，例如 `然后`、`两秒后`，凡删除后不影响上下文的就直接删除；也会删除对主角推进无影响的角色细节/行为句，并把可合并的相邻短句按“先因后果”和更有画面感的方式重写，同时把物品描写改成直接写“是什么样的东西”，不再先报名称再用短句解释；AI 味清理完成后，还会单独执行一轮润色，把物品、环境、人物描写升级成更优美、精美、华丽、有高级感的表达，并把人物行为描写升级成更豪迈、精准、刺激、带武侠风味的表达
 
 所以现在的设计是：结构收敛发生在 `novel-plan`，`novel-write` 负责把它细化成 20 个可核对剧情点，再让你逐点检查不同风格和最终择优结果。
 
@@ -258,7 +263,7 @@
 /plugin install vibe-noveling@vibe-noveling
 ```
 
-安装后 12 个技能和 2 个内置子 Agent 自动可用，支持自动更新。
+安装后 12 个技能和 7 个内置子 Agent 自动可用，支持自动更新。
 
 **注意，请关闭Claude Code的思考模式，避免过度思考导致剧情丧失了创造性。**
 
@@ -285,6 +290,11 @@ ln -s /path/to/vibe-noveling/plugins/vibe-noveling/skills/novel-discuss .claude/
 
 ln -s /path/to/vibe-noveling/plugins/vibe-noveling/agents/context-collector.md .claude/agents/context-collector.md
 ln -s /path/to/vibe-noveling/plugins/vibe-noveling/agents/consistency-guard.md .claude/agents/consistency-guard.md
+ln -s /path/to/vibe-noveling/plugins/vibe-noveling/agents/writer-hemingway.md .claude/agents/writer-hemingway.md
+ln -s /path/to/vibe-noveling/plugins/vibe-noveling/agents/writer-maibaoxiaolangjun.md .claude/agents/writer-maibaoxiaolangjun.md
+ln -s /path/to/vibe-noveling/plugins/vibe-noveling/agents/writer-zhouzi.md .claude/agents/writer-zhouzi.md
+ln -s /path/to/vibe-noveling/plugins/vibe-noveling/agents/writer-dazhongma.md .claude/agents/writer-dazhongma.md
+ln -s /path/to/vibe-noveling/plugins/vibe-noveling/agents/writer-banter.md .claude/agents/writer-banter.md
 ```
 
 ## 使用前提
@@ -325,7 +335,7 @@ your-novel/
 │           ├── Opus报告.md    # 反推报告
 │           ├── 海明威.md      # 风格中间稿
 │           ├── 卖报小郎君.md  # 风格中间稿
-│           ├── 火星引力.md    # 风格中间稿
+│           ├── 会说话的肘子.md # 风格中间稿
 │           ├── 大仲马.md      # 风格中间稿
 │           ├── 吐槽口语风.md  # 风格中间稿
 │           └── 正文.md        # 最终正文
@@ -369,7 +379,7 @@ vibe-noveling/
 │   └── vibe-noveling/          # 插件根目录
 │       ├── .claude-plugin/
 │       │   └── plugin.json     # 插件元数据
-│       ├── agents/             # 子 Agent（上下文收集 / 一致性守护）
+│       ├── agents/             # 子 Agent（上下文收集 / 一致性守护 / 5 个 writer subagent）
 │       └── skills/
 │           ├── novel-init/
 │           ├── novel-discuss/
@@ -427,7 +437,7 @@ rg -n "先澄清每个小剧情点的 5W1H|剧情思路卡|可写场景纲要|20
 
 - `docs/plans/2026-04-07-outline-format-redesign*.md`：记录 `novel-plan` 从旧版章节大纲格式转为第三人称精简剧情纲要的设计与实施。
 - `docs/plans/2026-04-08-novel-plan-5w1h-alignment*.md`：记录 `novel-plan` 在生成精简大纲前新增小剧情点 `5W1H` 对齐卡的设计与实施。
-- `docs/plans/2026-04-07-postwrite-style-correction*.md`：记录最终稿复检阶段的正文后文风矫正规则。
+- `docs/plans/2026-04-07-postwrite-style-correction*.md`：记录合并后正文 AI 味检测阶段的正文后文风矫正规则。
 - `docs/plans/2026-04-08-pointwise-merge*.md`：记录 `novel-write` 早期从整章合并改为细粒度逐段合并的流程调整。
 - `docs/plans/2026-04-13-booming*.md`：记录 `booming` 作为手动剧情爆破模式接入工作流的设计与实施。
 - `docs/plans/2026-04-14-fuck-it*.md`：记录 `fuck-it` 作为同终点单章加戏模式接入工作流的设计与实施。

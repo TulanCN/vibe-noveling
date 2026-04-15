@@ -1,6 +1,7 @@
 ---
 name: consistency-guard
 description: 一致性守护者，检查章节设定一致性，由 novel-write 调用
+model: sonnet
 tools:
   - Read
   - Grep
