@@ -17,6 +17,7 @@ when_to_use: |
 - 负责正文创作和文本层质检，结构级问题回退到 `novel-plan`
 - 默认读取双层大纲和 Opus 报告，不直接替代前序规划流程
 - 内置 27 个 AI 味检测项和最终稿文风矫正
+- `CLAUDE.md` 中的"小说宪法"是写作阶段的最高准则；宪法中的"作者人格"维度（叙事姿态、情感温度、幽默方式、信息习惯、叙事癖好）直接影响正文合并时的语气收束方向；宪法优先于默认规则和风格优先规则
 - 优先读取 `可写场景纲要`
 - 读取 `剧情思路卡` 作为结构约束
 - 若只有旧版 `第三人称精简剧情纲要`，则降级兼容
@@ -36,6 +37,7 @@ when_to_use: |
 - 自动合并生成最终稿
 - 保留中间稿供回看和局部抽取
 - 中间稿和最终稿都输出为带剧情点标题的章节正文
+- 强制返修环节：交付后必须经人工标记返修（或确认无需返修）才能同步
 
 ## 核心理念
 
@@ -65,26 +67,16 @@ when_to_use: |
 
 ## 内置 AI 味检测
 
-`novel-write` 直接负责 27 个 AI 味检测项。主 skill 只保留执行时机和边界，完整清单和最终稿专属矫正规则统一放在 `references/ai-smell-checklist.md`。
+AI 味检测委托给 `ai-smell-guard` agent 执行。主 skill 只保留执行时机、边界和润色职责，完整检测清单和矫正规则由 agent 从 `references/ai-smell-checklist.md` 读取。
 
 执行原则：
 
-- 中间稿写作时先按清单做轻量自检，但不提前统一抹平 5 个中间稿的风格差异
-- 最终稿合并后先做一致性校验，再按完整清单逐项复检，并强制执行最终稿文风矫正
-- 新增的检测项 22-27 吸收通用 humanizer 规则，不额外拆出独立 `/humanizer` skill
-- 只吸收适合中文网文正文的通用 AI 腔规则，不机械照搬英文排版约束
-- 破折号限制按整章统计，只统计中文破折号 `——`
-- 单章最多保留 1 处破折号；超过时必须改写句式，用断句、动作或对白节奏替代，不能只删除标点了事
-- `但是`、`然而`、`不过`、`只是`、`可`、`却`、`然后`、`随后`、`紧接着`、`两秒后` 等过渡性词语或短语要统一复检；凡删除后不影响上下文衔接、语义转折、时间感和阅读理解的，直接删除
-- 合并后正文复检时，要先评估当前章节里所有角色的细节描写和行为描写；如果删除后对主角的剧情推进、压力变化、关系判断和线索释放无任何影响，直接删除
-- 相邻短句若语义连贯、主语相同或动作连续，优先合并并重写；保留戏剧性节拍和独立短句留白，不做机械并句
-- 合并短句时要做因果重写：解释性短句优先改成先因后果；主语一致的连续动作要改成更有画面感的表达，而不是简单用逗号串联
-- 物品描写不得先写物品名称，再用短句补解释特征；要直接描写它是什么样的东西，而不是先说是什么、再说特征
-- AI 味检测通过后，必须再执行一轮独立润色；只升级词汇质感和动作表现，不改事实信息、动作因果和剧情点职责
+- 中间稿写作时先做轻量自检，但不提前统一抹平 5 个中间稿的风格差异
+- 最终稿合并后先做一致性校验，再调用 `ai-smell-guard` 执行 27 项完整检测与定点修正
+- `ai-smell-guard` 只处理文本层问题；如果回报结构性问题，停止正文硬修，回到 `novel-plan --revise`
+- AI 味检测通过后，主线程执行一轮独立润色；只升级词汇质感和动作表现，不改事实信息、动作因果和剧情点职责
 - 润色阶段要统一替换物品描写、环境描写、人物描写中的普通词汇，改成更优美、精美、华丽、有高级感的表达
 - 润色阶段要统一替换人物行为描写中的普通动词，改成更豪迈、精准、刺激、带武侠风味的表达
-- 水字数检查在正文阶段只处理句子、段落、场景内部铺陈级冗余，不负责删除整个剧情点或重排结构
-- 如果检测结果显示必须改动结构层推进，停止正文硬修，回到 `novel-plan --revise`
 
 ## 使用方式
 
@@ -141,8 +133,8 @@ when_to_use: |
        │  先修补称谓、时间线、认知和设定冲突，再进入正文质检
        ▼
   第八步：合并后正文 AI 味检测与文风复检
-       │  对 chapters/vol-{volume_padded}/ch-{chapter_padded}/正文.md 再做一轮 27 项 AI 味检测
-       │  执行一次定点修正 AI 味的正文后矫正
+       │  调用 ai-smell-guard agent 对正文执行 27 项检测与定点修正
+       │  agent 自行读取清单、检测、修正、写回
        ▼
   第九步：AI 味清理后的正文润色
        │  基于去除 AI 味后的正文做一轮词汇升级和动作润色
@@ -151,8 +143,13 @@ when_to_use: |
   第十步：交付最终稿和中间稿
        │  输出最终稿路径和中间稿路径
        ▼
-  第十一步：用户确认后触发同步
-       │  用户通知“确认 chapters/vol-{volume_padded}/ch-{chapter_padded}/正文.md”
+  第十一步：返修（强制环节，可循环）
+       │  用户在正文中加入标记 → 调用 revision-handler agent
+       │  返修后直接交付，不做 AI 味复查
+       │  用户可多次标记 → 返修，直到满意
+       ▼
+  第十二步：用户确认后触发同步
+       │  用户通知”确认 chapters/vol-{volume_padded}/ch-{chapter_padded}/正文.md”
        │  自动执行 novel-sync
        ▼
   ✅ 完成
@@ -270,6 +267,36 @@ prompt: 为第 X 章收集上下文，大纲文件：chapters/vol-{volume_padded
 - 同一个剧情点内部可以自由扩写台词、动作和细节
 - 如果切分后发现必须新增关键事件、删除关键事件或重排章节收尾，停止并回到 `novel-plan --revise`
 
+### 2A.3 密度继承与传导
+
+剧情点从所属场景块继承密度标记（高/中/低），并传导至写作约束。
+
+**继承规则**：
+
+- 从大纲的可写场景纲要中读取每个场景块的密度字段
+- 每个剧情点继承其所属场景的密度
+- 如果场景未标密度，继承基本信息中的本章密度定位
+- 如果本章密度也未标注，默认为中（标准）
+
+**密度对剧情点的影响**：
+
+- **高密度剧情点**：字数空间更大（200-400字/点），必须包含感官层次（视觉+听觉+触觉）、在场角色反应、主角内心冲击
+- **中密度剧情点**：标准处理（120-200字/点）
+- **低密度剧情点**：压缩处理（50-100字/点），只保留动作推进和信息释放，禁止环境描写、配角心理、微动作、过场废话
+
+**传导方式**：
+
+密度标记写入 `剧情点.md`，每个剧情点条目追加密度字段，格式如下：
+
+```markdown
+### 剧情点 03：[标题]
+- 密度：高（展开）← 继承自场景 2
+- 起始状态：
+- 核心推进：
+- 关系变化：
+- 结束压力：
+```
+
 ### 2A.3 何时必须退回 `novel-plan`
 
 以下情况必须停止正文阶段硬修：
@@ -330,6 +357,26 @@ prompt: 为第 X 章收集上下文，大纲文件：chapters/vol-{volume_padded
 
 将提炼的"写作约束摘要"写入 `chapters/vol-{volume_padded}/ch-{chapter_padded}/写作约束.md`。
 若不存在 Opus 报告，写入"无额外约束"。
+
+密度约束同时追加到 `写作约束.md`，格式如下：
+
+```markdown
+## 详略约束
+
+高密度剧情点（{编号列表}）：
+  - 字数空间：200-400字/点
+  - 必须包含：感官层次、在场角色反应、主角内心冲击
+  - 禁止压缩，宁可写多
+
+低密度剧情点（{编号列表}）：
+  - 字数空间：50-100字/点
+  - 只保留：动作推进 + 信息释放
+  - 禁止：环境描写、配角心理、微动作、过场废话
+
+中密度剧情点（{编号列表}）：
+  - 字数空间：120-200字/点
+  - 标准处理
+```
 
 ## 第二步 C：合并配置
 
@@ -398,7 +445,7 @@ AskUserQuestion({
 2. **卖报小郎君风（轻悬疑群像）**
 3. **会说话的肘子风（现代快节奏战斗 + 临场决断）**
 4. **大仲马风（精密布局与戏剧交锋）**
-5. **吐槽口语风（主角反应 + 口语提气）**
+5. **马克吐温风（犀利观察 + 冷面反讽 + 精准吐槽）**
 
 中间稿全部保留到本章目录 `chapters/vol-{volume_padded}/ch-{chapter_padded}/`，供回看、局部抽取和后续复用。
 
@@ -432,7 +479,7 @@ AskUserQuestion({
 2. 卖报小郎君 → `writer-maibaoxiaolangjun`
 3. 会说话的肘子 → `writer-zhouzi`
 4. 大仲马 → `writer-dazhongma`
-5. 吐槽口语风 → `writer-banter`
+5. 马克吐温风 → `writer-banter`
 
 ### 4.1 并发调度
 
@@ -450,7 +497,7 @@ AskUserQuestion({
 卖报小郎君 → `subagent_type: writer-maibaoxiaolangjun`
 会说话的肘子 → `subagent_type: writer-zhouzi`
 大仲马 → `subagent_type: writer-dazhongma`
-吐槽口语风 → `subagent_type: writer-banter`
+马克吐温风 → `subagent_type: writer-banter`
 ```
 
 writer subagent 负责稳定文风人格、风格自检和通用写作规则；`novel-write` 主 skill 只需通过 prompt 传入章节动态任务和必读文件路径，不再内联展开上下文、大纲、剧情点或写作约束。
@@ -474,8 +521,8 @@ writer subagent 负责稳定文风人格、风格自检和通用写作规则；`
 
 1. `chapters/vol-{volume_padded}/ch-{chapter_padded}/上下文.md` — 角色设定、前情、伏笔
 2. `chapters/vol-{volume_padded}/ch-{chapter_padded}/大纲.md` — 本章大纲
-3. `chapters/vol-{volume_padded}/ch-{chapter_padded}/剧情点.md` — 20 个剧情点
-4. `chapters/vol-{volume_padded}/ch-{chapter_padded}/写作约束.md` — Opus 报告约束摘要
+3. `chapters/vol-{volume_padded}/ch-{chapter_padded}/剧情点.md` — 20 个剧情点（含密度标记）
+4. `chapters/vol-{volume_padded}/ch-{chapter_padded}/写作约束.md` — Opus 报告约束摘要 + 详略约束
 
 读取规则：
 - 上下文缓存文件直接原样读取，不要另写抽象总结
@@ -491,7 +538,7 @@ writer subagent 负责稳定文风人格、风格自检和通用写作规则；`
 - 卖报小郎君风的稳定人格、句式偏好、自检规则和通用写作规则由 `plugins/vibe-noveling/agents/writer-maibaoxiaolangjun.md` 提供
 - 会说话的肘子风的稳定人格、句式偏好、自检规则和通用写作规则由 `plugins/vibe-noveling/agents/writer-zhouzi.md` 提供
 - 大仲马风的稳定人格、句式偏好、自检规则和通用写作规则由 `plugins/vibe-noveling/agents/writer-dazhongma.md` 提供
-- 吐槽口语风的稳定人格、句式偏好、自检规则和通用写作规则由 `plugins/vibe-noveling/agents/writer-banter.md` 提供
+- 马克吐温风的稳定人格、句式偏好、自检规则和通用写作规则由 `plugins/vibe-noveling/agents/writer-banter.md` 提供
 
 调用时仅向对应 writer subagent 传入章节动态任务和必读文件路径，不再内联展开上下文、大纲、剧情点或写作约束。通用写作规则已内置在各 agent 定义文件中。
 
@@ -532,11 +579,13 @@ writer subagent 负责稳定文风人格、风格自检和通用写作规则；`
    - 最终稿必须在剧情点标题中标记来源风格
    - 所有剧情点合并后仍要保持 20 个标题完整可核对
 
-2. **默认规则**：读取 `references/merge-rules.md`，其中包含 5 条风格优先规则、10 条合并约束和最终稿偏好。
+2. **小说宪法**（首要依据）：读取 `CLAUDE.md` 中的"小说宪法"，宪法的叙事纹理、作者人格和风格锚点是风格择优的首要依据。合并 agent 必须先读宪法，再根据宪法气质判断哪个版本最适合当前剧情点。
 
-3. **章节配置覆盖**：如果存在 `chapters/vol-{volume_padded}/ch-{chapter_padded}/合并配置.md`，读取并按其规则覆盖默认规则。章节配置的优先级高于默认规则。
+3. **辅助规则**：读取 `references/merge-rules.md`，其中包含宪法对齐规则、密度内容约束、10 条合并约束和最终稿偏好。
 
-4. **降级兼容**：如果 `合并配置.md` 不存在，完全使用默认规则，行为与无配置时完全一致。
+4. **章节配置覆盖**：如果存在 `chapters/vol-{volume_padded}/ch-{chapter_padded}/合并配置.md`，读取并按其规则覆盖宪法推导的偏好。章节配置的优先级最高。
+
+5. **降级兼容**：如果 `合并配置.md` 不存在，以宪法为首要依据，`merge-rules.md` 中的合并约束和最终稿偏好作为辅助。
 
 ### 自动合并 Prompt 模板
 
@@ -545,8 +594,9 @@ writer subagent 负责稳定文风人格、风格自检和通用写作规则；`
 不要整章一次性融合，也不要跨风格拼句；每个剧情点只能选择 1 个主来源版本。
 
 ## 必读文件
+- CLAUDE.md — 小说宪法（风格择优的首要依据：叙事纹理、作者人格、风格锚点决定选哪个版本）
 - chapters/vol-{volume_padded}/ch-{chapter_padded}/剧情点.md — 20 个剧情点摘要
-- {SKILL_DIR}/references/merge-rules.md — 默认合并规则（风格优先规则、合并约束、最终稿偏好）
+- {SKILL_DIR}/references/merge-rules.md — 合并规则（宪法对齐、密度约束、合并约束、最终稿偏好）
 - chapters/vol-{volume_padded}/ch-{chapter_padded}/合并配置.md — 章节级合并配置（如存在）
 
 ## 输入文件
@@ -554,7 +604,7 @@ writer subagent 负责稳定文风人格、风格自检和通用写作规则；`
 - chapters/vol-{volume_padded}/ch-{chapter_padded}/卖报小郎君.md
 - chapters/vol-{volume_padded}/ch-{chapter_padded}/会说话的肘子.md
 - chapters/vol-{volume_padded}/ch-{chapter_padded}/大仲马.md
-- chapters/vol-{volume_padded}/ch-{chapter_padded}/吐槽口语风.md
+- chapters/vol-{volume_padded}/ch-{chapter_padded}/马克吐温.md
 
 ## 输出文件
 - chapters/vol-{volume_padded}/ch-{chapter_padded}/正文.md
@@ -570,20 +620,21 @@ writer subagent 负责稳定文风人格、风格自检和通用写作规则；`
 6. 最终稿必须完整保留 20 个剧情点标题，供用户人工核对
 
 ### 规则来源与优先级
-1. 先读取 `merge-rules.md` 获得默认风格优先规则、合并约束和最终稿偏好
-2. 再检查是否存在 `合并配置.md`
-3. 如果存在章节合并配置：
-   - 风格偏好：章节配置的「风格偏好」表优先于默认 5 条风格优先规则
-   - 全局约束：章节配置的「全局规则覆盖」追加到默认约束之后（或替换默认风格优先规则，如果声明了替换）
+1. 先读取 `CLAUDE.md` 中的"小说宪法"，宪法的叙事纹理、作者人格和风格锚点是风格择优的首要依据
+2. 再读取 `merge-rules.md` 获得宪法对齐规则、密度内容约束、合并约束和最终稿偏好
+3. 再检查是否存在 `合并配置.md`
+4. 如果存在章节合并配置：
+   - 风格偏好：章节配置的「风格偏好」表优先于宪法推导的偏好
+   - 全局约束：章节配置的「全局规则覆盖」追加到默认约束之后
    - 章节基调：作为模糊判断时的收束依据
-4. 如果不存在章节合并配置，完全使用 `merge-rules.md` 中的默认规则
+5. 如果不存在章节合并配置，以宪法为首要依据，`merge-rules.md` 中的合并约束和最终稿偏好作为辅助
 
 ### 合并后自检
 - 是否完整保留了 20 个剧情点标题
 - 是否每个剧情点都只标了 1 个来源风格
 - 是否减少概述式转述
-- 是否比五稿平均值更接近当前项目已经人工调整过的正文气质
-- 是否保住了必要的吐槽感、接话感和活气，而不是把字句洗干净后变干
+- 是否比五稿平均值更接近小说宪法定义的作者人格和叙事纹理
+- 是否保住了必要的犀利感、反讽和活气，而不是把字句洗干净后变干
 - 是否出现称谓漂移
 ```
 
@@ -602,14 +653,22 @@ writer subagent 负责稳定文风人格、风格自检和通用写作规则；`
 
 ## 第八步：合并后正文 AI 味检测与文风复检
 
-在最终稿一致性校验通过后，对 `chapters/vol-{volume_padded}/ch-{chapter_padded}/正文.md` 再做一轮正文层质检。
+在最终稿一致性校验通过后，对 `chapters/vol-{volume_padded}/ch-{chapter_padded}/正文.md` 执行 AI 味检测。本步委托给 `ai-smell-guard` agent，不在主线程内联展开 27 项清单。
 
-执行顺序：
+调用方式：
 
-1. 先完整读取 `references/ai-smell-checklist.md`，把它作为本步唯一的 AI 味检测清单来源；未读取清单前，不进入本步。
-2. 按 `references/ai-smell-checklist.md` 中的 AI 味检测项逐项复检。
-3. 若发现问题，只允许做文本层局部修补；不得借 AI 味修正名义重做结构。
-4. 不要把一致性校验和 AI 味检测写成同一步；合并后顺序固定为“先 consistency-guard，后 AI 味检测”。
+```text
+Agent 工具，subagent_type: ai-smell-guard
+prompt: 对 chapters/vol-{volume_padded}/ch-{chapter_padded}/正文.md 执行 AI 味检测与清理。
+```
+
+执行要求：
+
+1. agent 自行读取 `references/ai-smell-checklist.md` 作为唯一检测清单来源
+2. agent 按清单逐项检测、定点修正、写回正文
+3. agent 只处理文本层问题；如果回报结构性问题，主线程停止并回到 `novel-plan --revise`
+4. 不要把一致性校验和 AI 味检测写成同一步；合并后顺序固定为”先 consistency-guard，后 AI 味检测”
+5. agent 完成后，主线程继续执行第九步润色
 
 ## 第九步：AI 味清理后的正文润色
 
@@ -633,15 +692,58 @@ writer subagent 负责稳定文风人格、风格自检和通用写作规则；`
 - 中间稿：`chapters/vol-{volume_padded}/ch-{chapter_padded}/卖报小郎君.md`
 - 中间稿：`chapters/vol-{volume_padded}/ch-{chapter_padded}/会说话的肘子.md`
 - 中间稿：`chapters/vol-{volume_padded}/ch-{chapter_padded}/大仲马.md`
-- 中间稿：`chapters/vol-{volume_padded}/ch-{chapter_padded}/吐槽口语风.md`
+- 中间稿：`chapters/vol-{volume_padded}/ch-{chapter_padded}/马克吐温.md`
 
 交付说明中应简短说明：
 
 - 20 个剧情点各自选用了哪个来源风格
-- 哪些剧情点主要使用了海明威、大仲马或吐槽口语风
+- 哪些剧情点主要使用了海明威、大仲马或马克吐温风
 - 是否只做了局部修字，而没有跨风格拼贴
 
-## 第十一步：字数统计与同步确认
+## 第十一步：返修（强制环节，可循环）
+
+交付最终稿后，进入返修环节。用户必须在正文中加入标记并触发返修，或明确确认"无需返修"后，才能进入同步确认。
+
+### 11.1 触发条件
+
+用户在 `chapters/vol-{volume_padded}/ch-{chapter_padded}/正文.md` 中加入标记后，说"返修"/"处理标记"/"润色标记"等指令，即触发返修流程。
+
+### 11.2 标记约定
+
+| 标记 | 名称 | 含义 | AI 操作 |
+|---|---|---|---|
+| `**加粗**` | 润滑 | 句子之间缺过渡，读起来卡 | 补连接词、感知步骤、因果连接 |
+| `*斜体*` | 合并 | 多个短句碎，节奏散 | 合并重构为通顺长句 |
+| `~~删除线~~` | 清理重写 | 这段描写多余或有问题 | 删掉标记内容，重写所在句子 |
+| `` `行内代码` `` | 扩写 | 一句话太干，想多写点 | 展开为多个连贯长句 |
+
+完整操作指南和进阶操作见 `{SKILL_DIR}/references/revision-rules.md`。
+
+### 11.3 执行方式
+
+调用 `revision-handler` agent 处理返修：
+
+```text
+Agent 工具，subagent_type: revision-handler
+prompt: 对 chapters/vol-{volume_padded}/ch-{chapter_padded}/正文.md 执行返修处理。
+```
+
+执行要求：
+
+1. agent 自行读取 `references/revision-rules.md` 作为唯一规则来源
+2. agent 识别正文中所有标记，按规则逐个处理
+3. agent 处理完成后写回正文，移除所有标记
+4. 返修后不做 AI 味复查，直接交付让用户确认
+
+### 11.4 循环返修
+
+返修可多轮循环：用户标记 → AI 返修 → 用户再标记 → AI 再返修，直到用户满意后进入第十二步确认同步。
+
+### 11.5 退回规划
+
+如果返修过程中发现需要新增关键剧情、删除核心推进或重排结构，停止返修，回到 `novel-plan --revise`。
+
+## 第十二步：字数统计与同步确认
 
 对 5 个中间稿和最终稿分别统计字数。
 
@@ -655,6 +757,7 @@ writer subagent 负责稳定文风人格、风格自检和通用写作规则；`
 - 自动合并完成后，不直接同步知识图谱
 - 用户确认最终稿满意后，再执行：`/novel-sync chapter {chapter}`
 - 用户确认语句示例：`确认 chapters/vol-{volume_padded}/ch-{chapter_padded}/正文.md`
+- 如用户要求返修，先走第十一步返修流程，返修完成后再确认
 
 ## 输出格式
 
@@ -684,7 +787,7 @@ chapters/
 │       ├── 卖报小郎君.md
 │       ├── 会说话的肘子.md
 │       ├── 大仲马.md
-│       ├── 吐槽口语风.md
+│       ├── 马克吐温.md
 │       └── 正文.md
 ```
 
@@ -693,7 +796,7 @@ chapters/
 1. **准备阶段**：细切完成后将剧情点写入 `剧情点.md`，将写作约束写入 `写作约束.md`
 2. **创作阶段**：每个 Agent 自检通过后立即将正文写入 `chapters/vol-{volume_padded}/ch-{chapter_padded}/{style_name}.md`
 3. **合并阶段**：按 20 个剧情点顺序读取全部中间稿的对应内容，逐点择优生成最终稿 `chapters/vol-{volume_padded}/ch-{chapter_padded}/正文.md`
-3. **润色阶段**：AI 味检测完成后，对最终稿执行一轮独立润色，再回写 `chapters/vol-{volume_padded}/ch-{chapter_padded}/正文.md`
+3. **润色阶段**：`ai-smell-guard` agent 完成检测与修正后，主线程对最终稿执行一轮独立润色，再回写 `chapters/vol-{volume_padded}/ch-{chapter_padded}/正文.md`
 4. **交付阶段**：默认交付最终稿路径、各中间稿路径和 20 条来源清单，必要时再展示局部正文
 5. **同步阶段**：用户确认 `正文.md` 满意后，执行 `/novel-sync chapter {chapter}`
 6. **保留阶段**：各风格中间稿默认保留，供回看、回滚和局部抽取
@@ -708,8 +811,9 @@ chapters/
 6. **先看报告，再写正文** — `opus-report` 是放行条件和约束来源
 7. **结构问题不上正文阶段硬修** — 需要新增/删除/重排关键剧情段时，回到 `novel-plan --revise`
 8. **冗余描述在正文阶段清理** — 不把“水字数”主要寄希望于上游试写，正式成稿后必须再删一轮
-9. **最终稿向项目正文气质收束** — 保留能提气的吐槽、接话、口语感和轻俏叙述，但不放任成段子腔或 POV 外调侃
-10. **AI 味清理后再做润色** — 先保证文本干净，再统一做高级感描写和武侠风动作润色，且不改剧情事实与因果
+9. **最终稿向项目正文气质收束** — 保留能提气的犀利观察、冷面反讽和精准吐槽，但不放任成段子腔或 POV 外调侃
+10. **AI 味清理后再做润色** — AI 味检测委托给 `ai-smell-guard` agent；主线程在 agent 完成后做高级感描写和武侠风动作润色，且不改剧情事实与因果
+11. **返修是强制环节** — 交付后必须经过人工标记返修（或确认无需返修），才能进入同步确认；返修由 `revision-handler` agent 执行，未标记文字不动，返修后不做 AI 味复查
 
 ## 完成确认
 
@@ -721,7 +825,7 @@ chapters/
    - 卖报小郎君（{word_count} 字）
    - 会说话的肘子（{word_count} 字）
    - 大仲马（{word_count} 字）
-   - 吐槽口语风（{word_count} 字）
+   - 马克吐温风（{word_count} 字）
 
 🧩 已自动合并最终稿：
    - chapters/vol-{volume_padded}/ch-{chapter_padded}/正文.md
@@ -729,7 +833,8 @@ chapters/
 
 🔍 质量检查：一致性检查、AI 味清理与润色全部通过
 
-💡 下一步：
-   - 如需回看，可直接对照 5 个中间稿
-   - 若最终稿确认无误，直接回复：确认 chapters/vol-{volume_padded}/ch-{chapter_padded}/正文.md（将自动执行同步）
+📝 下一步（返修）：
+   - 请在正文中标记需要修改的位置（加粗=润滑、斜体=合并、删除线=清理重写、行内代码=扩写）
+   - 标记完成后说"返修"，AI 将按标记处理
+   - 若确认无需返修，直接回复：确认 chapters/vol-{volume_padded}/ch-{chapter_padded}/正文.md（将自动执行同步）
 ```
