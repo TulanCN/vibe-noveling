@@ -14,9 +14,12 @@
 
 ### 实现方式
 
-创建独立的 `revision-handler` agent 处理返修，不内联到主 skill。理由：
-- 返修规则较多（四种标记 + 各自进阶操作），独立 agent 职责清晰
-- 与 `ai-smell-guard` 的架构模式一致
+返修由主 session 直接执行，读取 `references/revision-rules.md` 作为唯一规则来源。不创建独立 agent。
+
+理由：
+- 返修规则较多（四种标记 + 各自进阶操作），但主 session 已有完整的正文上下文，内联执行更连贯
+- 减少不必要的 agent 派发开销
+- 与 AI 味检测保持一致架构（两者都由主 session 直接执行）
 
 ### 标记约定
 
@@ -29,7 +32,7 @@
 
 ### 返修后不做 AI 味复查
 
-返修只涉及局部修改，不做完整的 27 项 AI 味复查。返修后直接交付让用户确认。
+返修只涉及局部修改，不做完整的 28 项 AI 味复查。返修后直接交付让用户确认。
 
 ### 循环返修
 
@@ -38,9 +41,13 @@
 ## 新增文件
 
 - `plugins/vibe-noveling/skills/novel-write/references/revision-rules.md` — 返修规则参考文件
-- `plugins/vibe-noveling/agents/revision-handler.md` — 返修处理 agent
 
 ## 修改文件
 
-- `plugins/vibe-noveling/skills/novel-write/SKILL.md` — 流程图、Step 10A、核心特性、关键原则、完成确认模板
-- `README.md` — 技能表、Agents 表、工作流图、正文写作说明、快速开始示例
+- `plugins/vibe-noveling/skills/novel-write/SKILL.md` — 流程图、Step 8（AI 味检测改为内联）、Step 11（返修改为内联）、核心特性、关键原则、完成确认模板
+- `README.md` — 技能表、Agents 表、工作流图、正文写作说明
+
+## 删除文件
+
+- `plugins/vibe-noveling/agents/revision-handler.md` — 返修不再使用独立 agent
+- `plugins/vibe-noveling/agents/ai-smell-guard.md` — AI 味检测不再使用独立 agent
