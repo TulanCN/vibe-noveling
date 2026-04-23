@@ -14,16 +14,17 @@
 
 ## 特性
 
-- **12 个专业技能 + 5 个内置子 Agent** — 覆盖初始化、讨论、规划、写作、检查、同步全流程；其中 `booming` 负责剧情爆破，`fuck-it` 负责单章同终点加戏
+- **13 个专业技能 + 4 个内置子 Agent** — 覆盖初始化、讨论、规划、写作、返修、同步全流程；其中 `booming` 负责剧情爆破，`fuck-it` 负责单章同终点加戏
 - **知识图谱驱动** — 自动管理角色、地点、物品、势力等设定，支持搜索和关系追踪
 - **Save the Cat 剧情架构** — 内置 15 节拍故事母型，支持全书/分卷/单章三层规划
 - **手动剧情爆破模式** — `booming` 主要给 `novel-discuss` 用；当你觉得剧情太平、不够炸、想强行掀桌时，先用 `booming`；默认给 10 套高烈度爆破走向（每套一句话梗概），至少两套必须真正掀桌
 - **同终点单章加戏模式** — `fuck-it` 主要给 `novel-discuss` 和 `novel-plan` 用；当你不想改本章结束目标、只想把单章内部写得更戏剧、更夸张、更有漫画感时，先用 `fuck-it`；默认给 3 套同终点强化方案，但会先过一遍内置的 15 种单章加戏方向，再从中挑 3 种，且每套都必须有漫画感
 - **逐点澄清后再落大纲** — `/novel-plan` 会先澄清每个小剧情点的 5W1H，再产出 `剧情思路卡 + 可写场景纲要` 的双层大纲
-- **默认全风格逐个调用 writer subagent + 自动合并** — 基于双层大纲在正文阶段细切为固定 20 个剧情点，按风格顺序逐个调用 5 个 writer subagent；5 个风格稿都显性保留剧情点标题，最终稿按剧情点逐点择优并在标题处标记来源风格
+- **双风格逐个调用 writer subagent + 自动合并** — 肘子底稿 + 大仲马高光，基于双层大纲在正文阶段细切为固定 20 个剧情点，按顺序逐个调用 2 个 writer subagent；2 个风格稿都显性保留剧情点标题，最终稿按剧情点逐点择优（默认选肘子，高光剧情点选大仲马），并在标题处标记来源风格
 - **规划期强制反思 + 爽点检查** — `novel-plan` 内置结构层自检，先在大纲阶段拦住平淡和失效推进
 - **正文期 AI 味检测 + 润色阶段** — `novel-write` 主 session 直接读取 `ai-smell-checklist.md` 执行 28 项文本质检与定点修正，完成后再做独立润色
-- **强制返修环节** — 交付后用户在正文中标记问题点（加粗=润滑、斜体=合并、删除线=清理重写、行内代码=扩写），主 session 读取 `revision-rules.md` 按标记规则处理，可循环多轮
+- **润色后仿人工增强** — 润色完成后统计全部 7 类虚词密度，与手工精修基准对比，用 SSoT 对低于基准的虚词类别做定向补插（允许改写句式）
+- **强制返修环节** — 交付后用户在正文中标记问题点（加粗=扩写、删除线=简写、斜体=润色），运行 `/novel-revise` 为每个标记生成 3 种 SSoT 驱动的改写候选，用户挑选后立即写入，可循环多轮
 - **命名生成器** — 支持角色、功法、门派、物品等 8 类命名，带稀有度体系
 - **进度可视化** — 自动生成字数统计饼图
 - **快照管理** — 安全的版本备份与回滚
@@ -39,8 +40,9 @@
 | `/fuck-it`         | fuck it、fuck-it、单章加戏 | 同终点单章加戏模式，主要给 `novel-discuss` 和 `novel-plan` 用；不改本章结束目标，默认给 3 套同终点强化方案，但会先过一遍内置的 15 种单章加戏方向，再从中挑 3 种，而且每套都必须有漫画感，选中后直接收束进当前规划 |
 | `/novel-bookplan`  | 全书大纲、卷结构       | Save the Cat 15 节拍全书架构规划，按卷与节拍规划，不预设章节数                                            |
 | `/novel-plan`      | 规划下一章             | 先澄清每个小剧情点的 5W1H，再生成 `剧情思路卡 + 可写场景纲要` 的双层大纲 + Opus 正文测试，并内置规划期强制反思与爽点检查 |
-| `/novel-write`     | 写章节、创作正文       | 默认全风格逐个调用 5 个 writer subagent，正文阶段细切为固定 20 个剧情点；5 个风格稿都显性保留剧情点标题，最终稿按剧情点逐点择优并标记来源风格，合并后先做最终稿一致性校验，再由主 session 读取 `ai-smell-checklist.md` 做 28 项 AI 味检测与定点修正，最后做独立润色；交付后强制进入返修环节，用户标记问题点后主 session 读取 `revision-rules.md` 按规则处理 |
-| `/novel-sync`      | 同步、更新状态         | 章节完成后更新知识图谱                                                                                    |
+| `/novel-write`     | 写章节、创作正文       | 双风格逐个调用 2 个 writer subagent（肘子底稿 + 大仲马高光），正文阶段细切为固定 20 个剧情点；2 个风格稿都显性保留剧情点标题，最终稿按剧情点逐点择优（默认选肘子，高光剧情点选大仲马）并标记来源风格，合并后先做最终稿一致性校验，再由主 session 读取 `ai-smell-checklist.md` 做 28 项 AI 味检测与定点修正，最后做独立润色，再用 SSoT 做统计驱动的仿人工增强；交付后提示用户运行 `/novel-revise` 返修或 `/novel-sync` 同步 |
+| `/novel-revise`    | 返修、处理标记         | 用户在正文中标记问题点（加粗=扩写、删除线=简写、斜体=润色），为每个标记生成 3 种 SSoT 驱动的改写候选，用户挑选后立即写入文件 |
+| `/novel-sync`      | 同步、更新状态         | 返修完成后更新知识图谱                                                                        |
 | `/novel-knowledge` | （内部调用）           | 知识图谱：搜索/创建/更新实体                                                                              |
 | `/novel-name`      | 命名、取名             | 8 类命名生成器（Python 脚本）                                                                             |
 | `/novel-snapshot`  | 快照、备份             | 项目版本快照管理                                                                                          |
@@ -52,11 +54,8 @@
 | --------------------- | ------------------------------------------------------------- |
 | `context-collector` | 为 `novel-plan` / `novel-write` 收集并缓存章节上下文      |
 | `consistency-guard` | 为 `novel-write` 提供一致性检查，替代已废弃的独立检查 skill |
-| `writer-hemingway` | 为 `novel-write` 产出海明威风中间稿，负责极简硬派文风 |
-| `writer-maibaoxiaolangjun` | 为 `novel-write` 产出卖报小郎君风中间稿，负责轻悬疑群像推进 |
-| `writer-zhouzi` | 为 `novel-write` 产出会说话的肘子风中间稿，负责现代快节奏战斗与临场决断 |
-| `writer-dazhongma` | 为 `novel-write` 产出大仲马风中间稿，负责精密布局与戏剧交锋 |
-| `writer-banter` | 为 `novel-write` 产出马克吐温风中间稿，负责犀利观察、冷面反讽与精准吐槽 |
+| `writer-zhouzi` | 为 `novel-write` 产出会说话的肘子风底稿，负责现代快节奏战斗与临场决断 |
+| `writer-dazhongma` | 为 `novel-write` 产出大仲马风高光稿，负责精密布局与戏剧交锋 |
 
 ## 工作流
 
@@ -69,11 +68,11 @@
     ↓
 /novel-plan          →  先澄清每个小剧情点的 5W1H，再生成双层大纲（剧情思路卡 + 可写场景纲要）+ 内置规划期强制反思与爽点检查
     ↓
-/novel-write         →  正文阶段细切为固定 20 个剧情点 + 默认全风格逐个调用 5 个 writer subagent + 最终稿按剧情点逐点择优并标记来源风格 + 合并后先做一致性校验，再由主 session 读取 ai-smell-checklist.md 做 AI 味检测，最后做独立润色
+/novel-write         →  正文阶段细切为固定 20 个剧情点 + 双风格逐个调用 2 个 writer subagent（肘子底稿 + 大仲马高光）+ 最终稿按剧情点逐点择优（默认选肘子，高光选大仲马）并标记来源风格 + 合并后先做一致性校验，再由主 session 读取 ai-smell-checklist.md 做 AI 味检测，最后做独立润色，再用 SSoT 做统计驱动的仿人工增强
     ↓
 生成最终稿          →  自动合并生成最终稿，并保留各风格中间稿供回看
     ↓
-返修                →  用户在正文中标记问题点，主 session 读取 revision-rules.md 按标记规则处理（润滑/合并/清理重写/扩写），可循环多轮
+/novel-revise        →  用户在正文中标记问题点（**加粗**=扩写、~~删除线~~=简写、*斜体*=润色），SSoT 驱动为每个标记生成 3 种改写候选，用户挑选后立即写入文件，可循环多轮
     ↓
 /novel-sync          →  同步更新知识图谱
     ↓
@@ -211,15 +210,37 @@
 1. 读取 `大纲.md`、`上下文.md`、`Opus报告.md`
 2. 优先读取 `剧情思路卡` 和 `可写场景纲要`；如果当前章节还是旧结构，再降级兼容 `第三人称精简剧情纲要`
 3. 在正文阶段细切为固定 20 个剧情点，这个切分不回写 outline，但会直接成为正文的显性核对骨架
-4. 按固定顺序逐个调用 5 个 writer subagent，而不是一次性全并发
-5. 5 个风格稿都显性保留剧情点标题，便于横向对照
-6. 最终稿按剧情点逐点择优，每个剧情点只选 1 个来源版本
-7. 如果某个剧情点角色活气不够，会自动从马克吐温风里选取犀利反应对应的版本作为优先候选
-8. 最终稿在标题处标记来源风格，例如 `【剧情点07：雨巷试探｜来源：大仲马】`
-9. 最终稿合并后，先做最终稿一致性校验，再由主 session 读取 `ai-smell-checklist.md` 做正文 AI 味检测与定点修正（28 项检测，含过渡词清理、冗余描写删除、短句合并重写等）；完成后，再做一轮独立润色，把物品、环境、人物描写升级成更优美、精美、华丽、有高级感的表达，并把人物行为描写升级成更豪迈、精准、刺激、带武侠风味的表达
-10. 交付后强制进入返修环节：用户在正文中标记问题点（加粗=润滑、斜体=合并、删除线=清理重写、行内代码=扩写），主 session 读取 `revision-rules.md` 按标记规则处理，可循环多轮，直到用户满意或确认无需返修后才进入同步
+4. 按顺序逐个调用 2 个 writer subagent（肘子底稿 + 大仲马高光）
+5. 2 个风格稿都显性保留剧情点标题，便于横向对照
+6. 最终稿按剧情点逐点择优，每个剧情点只选 1 个来源版本；默认选肘子，高光剧情点（战斗、对峙、布局交锋、戏剧反转）选大仲马
+7. 最终稿在标题处标记来源风格，例如 `【剧情点07：雨巷试探｜来源：大仲马】`
+8. 最终稿合并后，先做最终稿一致性校验，再由主 session 读取 `ai-smell-checklist.md` 做正文 AI 味检测与定点修正（28 项检测，含过渡词清理、冗余描写删除、短句合并重写等）；完成后，再做一轮独立润色，把物品、环境、人物描写升级成更优美、精美、华丽、有高级感的表达，并把人物行为描写升级成更豪迈、精准、刺激、带武侠风味的表达
+9. 润色完成后，执行仿人工增强：统计正文全部 7 类虚词密度，与手工精修基准对比，对低于基准的虚词类别用 SSoT 做定向补插（允许改写句式），使正文虚词分布接近手工精修水平
+10. 交付后提示用户进行返修和同步
 
-所以现在的设计是：结构收敛发生在 `novel-plan`，`novel-write` 负责把它细化成 20 个可核对剧情点，再让你逐点检查不同风格和最终择优结果，最后强制走一轮人工标记返修。
+所以现在的设计是：结构收敛发生在 `novel-plan`，`novel-write` 负责把它细化成 20 个可核对剧情点，再用肘子和大仲马两种风格各写全章，逐点择优合并成最终稿，交付后由用户决定是否需要返修。
+
+### 5.5. 返修正文：`/novel-revise`
+
+正文交付后，用户可以在正文中标记问题点，运行 `/novel-revise` 进行返修。
+
+标记约定：
+
+- `**加粗**` = 扩写（一句话太干，想多写点）
+- `~~删除线~~` = 简写（太啰嗦，需要压缩）
+- `*斜体*` = 润色（句子不顺/散/卡，需要调整）
+
+返修流程：
+
+1. 用户在正文中标记问题点
+2. 运行 `/novel-revise`
+3. 对每个标记，用 SSoT 驱动生成 3 种不同策略的改写候选
+4. 用户挑选最满意的版本（或输入自定义改写）
+5. 选定后立即写入文件
+6. 重复直到所有标记处理完毕
+7. 返修完成后运行 `/novel-sync` 同步知识图谱
+
+核心原则：人最不可取代的部分是品味。AI 生成所有候选策略，人来判断用哪个。SSoT 确保每个候选版本写法不同，避免趋同。
 
 ### 6. 同步结果：`/novel-sync`
 
@@ -250,7 +271,7 @@
 
 如果试写发现结构不顺：
 
-`/novel-plan --revise` → 再试写 → `/novel-write` → `/novel-sync`
+`/novel-plan --revise` → 再试写 → `/novel-write` → `/novel-revise` → `/novel-sync`
 
 如果中途补了重要设定或长期主线方向：
 
@@ -267,7 +288,7 @@
 /plugin install vibe-noveling@vibe-noveling
 ```
 
-安装后 12 个技能和 5 个内置子 Agent 自动可用，支持自动更新。
+安装后 13 个技能和 4 个内置子 Agent 自动可用，支持自动更新。
 
 **注意，请关闭Claude Code的思考模式，避免过度思考导致剧情丧失了创造性。**
 
@@ -294,11 +315,8 @@ ln -s /path/to/vibe-noveling/plugins/vibe-noveling/skills/novel-discuss .claude/
 
 ln -s /path/to/vibe-noveling/plugins/vibe-noveling/agents/context-collector.md .claude/agents/context-collector.md
 ln -s /path/to/vibe-noveling/plugins/vibe-noveling/agents/consistency-guard.md .claude/agents/consistency-guard.md
-ln -s /path/to/vibe-noveling/plugins/vibe-noveling/agents/writer-hemingway.md .claude/agents/writer-hemingway.md
-ln -s /path/to/vibe-noveling/plugins/vibe-noveling/agents/writer-maibaoxiaolangjun.md .claude/agents/writer-maibaoxiaolangjun.md
 ln -s /path/to/vibe-noveling/plugins/vibe-noveling/agents/writer-zhouzi.md .claude/agents/writer-zhouzi.md
 ln -s /path/to/vibe-noveling/plugins/vibe-noveling/agents/writer-dazhongma.md .claude/agents/writer-dazhongma.md
-ln -s /path/to/vibe-noveling/plugins/vibe-noveling/agents/writer-banter.md .claude/agents/writer-banter.md
 ```
 
 ## 使用前提
@@ -337,11 +355,8 @@ your-novel/
 │           ├── 上下文.md      # 章节上下文
 │           ├── Opus试写.md    # 试写正文
 │           ├── Opus报告.md    # 反推报告
-│           ├── 海明威.md      # 风格中间稿
-│           ├── 卖报小郎君.md  # 风格中间稿
-│           ├── 会说话的肘子.md # 风格中间稿
-│           ├── 大仲马.md      # 风格中间稿
-│           ├── 马克吐温.md    # 风格中间稿
+│           ├── 会说话的肘子.md # 风格中间稿（底稿）
+│           ├── 大仲马.md      # 风格中间稿（高光）
 │           └── 正文.md        # 最终正文
 ├── .snapshots/                # 版本快照
 └── templates/                 # 模板文件
@@ -364,7 +379,8 @@ your-novel/
 # 4. 开始写作
 /novel-write 01
 
-# 5. 在正文中标记问题点，触发返修（或确认无需返修）
+# 5. 在正文中标记问题点，运行返修
+/novel-revise 01
 
 # 6. 确认最终稿并同步
 /novel-sync chapter 1
@@ -385,7 +401,7 @@ vibe-noveling/
 │   └── vibe-noveling/          # 插件根目录
 │       ├── .claude-plugin/
 │       │   └── plugin.json     # 插件元数据
-│       ├── agents/             # 子 Agent（上下文收集 / 一致性守护 / 5 个 writer subagent）
+│       ├── agents/             # 子 Agent（上下文收集 / 一致性守护 / 2 个 writer subagent）
 │       └── skills/
 │           ├── novel-init/
 │           ├── novel-discuss/
@@ -399,6 +415,8 @@ vibe-noveling/
 │           ├── novel-write/
 │           │   ├── references/
 │           │   └── tools/
+│           ├── novel-revise/
+│           │   └── references/
 │           ├── novel-sync/
 │           ├── novel-knowledge/
 │           │   └── scripts/

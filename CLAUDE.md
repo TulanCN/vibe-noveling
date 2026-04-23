@@ -16,7 +16,9 @@ This repository is a Claude Code plugin, not a traditional application. The main
 - `plugins/vibe-noveling/` is the publishable plugin root.
 - `plugins/vibe-noveling/.claude-plugin/plugin.json` holds plugin metadata.
 - `plugins/vibe-noveling/skills/` contains the shipped workflow contracts, supporting references, and small Python tools.
+  - `booming`, `fuck-it`, `novel-bookplan`, `novel-discuss`, `novel-init`, `novel-knowledge`, `novel-name`, `novel-plan`, `novel-progress`, `novel-snapshot`, `novel-sync`, `novel-write`
 - `plugins/vibe-noveling/agents/` contains the built-in subagent prompts used by the writing workflow.
+  - `consistency-guard` (一致性校验), `context-collector` (上下文收集), `writer-dazhongma` (大仲马风), `writer-zhouzi` (会说话的肘子风)
 - `README.md` is the public product and contributor guide; keep it aligned with shipped behavior.
 - `tests/test_novel_write_workflow.py` is the prompt-contract regression suite. Most assertions validate wording, file layout, and workflow guarantees rather than runtime business logic.
 - `docs/plans/` stores workflow design history and implementation notes. Search here before changing a workflow that may already have a recorded rationale.
