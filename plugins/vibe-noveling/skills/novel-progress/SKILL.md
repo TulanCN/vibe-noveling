@@ -27,7 +27,7 @@ when_to_use: |
 | 分类 | 匹配路径 | 说明 |
 |------|----------|------|
 | 大纲 | `chapters/vol-xx/ch-xxxx/大纲.md` | 各章精简剧情纲要 |
-| 设定文件 | `memory/**`, `chapters/vol-xx/ch-xxxx/上下文.md` | 世界观、角色、物品等设定 + 章节上下文 |
+| 设定文件 | `memory/**` | 世界观、角色、物品等设定 |
 | 正文 | `chapters/vol-xx/ch-xxxx/正文.md` | 已撰写的章节正文 |
 
 ## 字数统计规则

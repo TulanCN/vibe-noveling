@@ -16,12 +16,12 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent.parent.parent.paren
 # 文件分类规则：(分类名, glob_pattern 列表)
 CATEGORIES = [
     ("大纲", ["chapters/vol-*/ch-*/大纲.md"]),
-    ("设定文件", ["memory/**/*.md", "chapters/vol-*/ch-*/上下文.md"]),
+    ("设定文件", ["memory/**/*.md"]),
     ("正文", ["chapters/vol-*/ch-*/正文.md"]),
 ]
 
-# 正文分类需要排除的文件（避免被大纲和上下文文件误匹配）
-EXCLUDE_PATTERNS = ["大纲.md", "上下文.md"]
+# 正文分类需要排除的文件（避免被大纲文件误匹配）
+EXCLUDE_PATTERNS = ["大纲.md"]
 
 # 饼图配色
 COLORS = ["#4CAF50", "#2196F3", "#FF9800", "#9C27B0", "#F44336", "#00BCD4", "#795548"]

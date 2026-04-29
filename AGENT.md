@@ -112,7 +112,7 @@ python3 -m unittest tests/test_novel_write_workflow.py -v
 ```
 
 ```bash
-rg -n "先澄清每个小剧情点的 5W1H|剧情思路卡|可写场景纲要|正文阶段内部切分|按内部写作单元逐个合并|自动合并生成最终稿" \
+rg -n "故事大纲|故事梗概|剧情思路卡|叙述式可写场景纲要|大纲 AI 味检测|正文阶段内部切分|按内部写作单元逐个合并|自动合并生成最终稿" \
   README.md \
   plugins/vibe-noveling/skills/novel-plan/SKILL.md \
   plugins/vibe-noveling/skills/novel-plan/references/output.md \

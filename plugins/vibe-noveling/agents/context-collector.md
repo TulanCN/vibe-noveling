@@ -175,7 +175,7 @@ python "${CLAUDE_PLUGIN_ROOT}/skills/novel-knowledge/scripts/knowledge_graph.py"
 - `memory/entities/` 目录下的设定文件
 - `chapters/vol-{volume_padded}/ch-{chapter_padded}/大纲.md` 大纲文件
 - 已完成章节的摘要（`memory/past.md`）
-- `memory/future/00-index.md`、`10-book.md`、`20-threads.md`、相关 `30-volumes/` / `40-arcs/`
+- `memory/future/00-index.md`、`10-book.md`、`20-threads.md`、相关 `30-volumes/` / `40-events/`
 - `memory/worldbuilding.md` 世界观设定
 
 ## 输出格式

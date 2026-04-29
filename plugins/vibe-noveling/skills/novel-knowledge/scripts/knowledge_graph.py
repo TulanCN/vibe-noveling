@@ -3,7 +3,6 @@
 知识图谱工具 - knowledge_graph.py
 
 纯数据访问工具，提供基础的搜索和索引功能。
-高级语义理解（如生成上下文）由 context-collector agent 完成。
 
 功能:
 1. 搜索知识图谱: python {SKILL_DIR}/scripts/knowledge_graph.py search <query>

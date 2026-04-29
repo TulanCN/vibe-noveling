@@ -193,9 +193,9 @@
 - 已完成成长（已写完章节后的变化）
 
 **禁止写入**：
-- 未来剧情发展 → 放章节大纲或 `memory/future/40-arcs/` / `memory/future/30-volumes/`
+- 未来剧情发展 → 放章节大纲或 `memory/future/40-events/` / `memory/future/30-volumes/`
 - 成长计划 → 放 `memory/future/30-volumes/` 或 `memory/future/10-book.md`
-- 预期关系变化 → 放章节大纲或 `memory/future/40-arcs/`
+- 预期关系变化 → 放章节大纲或 `memory/future/40-events/`
 
 **判断标准**：内容是否已经发生（章节已写完）？避免"计划"、"将"、"会"等未来时态。
 

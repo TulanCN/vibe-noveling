@@ -193,6 +193,6 @@ skill="novel-knowledge", args="rebuild"
 - 与其他实体的关系
 
 **禁止写入**：
-- 未来剧情中的使用方式 → 放章节大纲或 `memory/future/40-arcs/`
-- 计划中的升级路径 → 放 `memory/future/30-volumes/` 或 `memory/future/40-arcs/`
+- 未来剧情中的使用方式 → 放章节大纲或 `memory/future/40-events/`
+- 计划中的升级路径 → 放 `memory/future/30-volumes/` 或 `memory/future/40-events/`
 - "可能"出现的变体 → 放 `memory/future/` 对应规划文件
