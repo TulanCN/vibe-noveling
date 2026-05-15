@@ -1,6 +1,6 @@
 ---
 name: novel-bookplan
-description: 规划全书架构、分卷节奏或重校长期主线。
+description: 在以下情况加载这个skill：用户要规划全书架构、分卷节奏或重校长期主线，如"全书大纲""卷结构""bookplan""分卷规划"等。
 when_to_use: |
   适用于"全书大纲""卷结构""bookplan""故事母型""分卷规划""重排卷结构"等请求。
   单章规划用 novel-plan；正文创作用 novel-write。

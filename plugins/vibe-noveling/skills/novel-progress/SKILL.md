@@ -1,6 +1,6 @@
 ---
 name: novel-progress
-description: 当用户需要查看项目进度、字数统计或生成进度图时使用。
+description: 在以下情况加载这个skill：用户要查看项目进度、字数统计或生成进度可视化图表，如"进度""字数""饼图""progress"等。
 when_to_use: |
   适用于“进度”“字数”“饼图”“progress”“当前写了多少”“字数占比”“各类型文件统计”等请求。
   输出为项目级统计视图，不负责修改正文或大纲内容。
@@ -26,9 +26,9 @@ when_to_use: |
 
 | 分类 | 匹配路径 | 说明 |
 |------|----------|------|
-| 大纲 | `chapters/vol-xx/ch-xxxx/大纲.md` | 各章精简剧情纲要 |
+| 大纲 | `chapters/e{num}/ch-{seq}/大纲.md` | 各章精简剧情纲要 |
 | 设定文件 | `memory/**` | 世界观、角色、物品等设定 |
-| 正文 | `chapters/vol-xx/ch-xxxx/正文.md` | 已撰写的章节正文 |
+| 正文 | `chapters/e{num}/ch-{seq}/正文.md` | 已撰写的章节正文 |
 
 ## 字数统计规则
 

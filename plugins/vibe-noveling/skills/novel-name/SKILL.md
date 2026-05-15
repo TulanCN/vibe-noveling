@@ -1,6 +1,6 @@
 ---
 name: novel-name
-description: 批量生成中文风格名称候选。
+description: 在以下情况加载这个skill：其他skill或agent需要批量生成角色名、功法名、门派名、物品名等中文风格名称候选。
 when_to_use: |
   仅供其他 skill 或 agent 调用，用于生成角色名、功法名、门派名、物品名、灵兽名、地点名、丹药名、法号名。
   需要项目级去重、稀有度控制或风格化命名时使用。

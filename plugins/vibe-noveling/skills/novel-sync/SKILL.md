@@ -1,6 +1,6 @@
 ---
 name: novel-sync
-description: 章节完成后回写知识图谱与剧情摘要。
+description: 在以下情况加载这个skill：章节完成后需要回写知识图谱与剧情摘要，如"同步""sync""更新状态""更新知识图谱"等。
 when_to_use: |
   适用于"同步""sync""更新状态""更新知识图谱""更新past"等请求。
   仅在正文通过返修确认后执行；正文创作用 novel-write。
@@ -26,7 +26,7 @@ when_to_use: |
 
 ### 任务清单
 
-1. **更新剧情摘要**：读 `chapters/vol-{v}/ch-{c}/正文.md`，提取核心事件和关键变化，追加 ≤100 字摘要到 memory/past.md
+1. **更新剧情摘要**：读 `chapters/e{event_padded}/ch-{chapter_seq}/正文.md`，提取核心事件和关键变化，追加 ≤100 字摘要到 memory/past.md
 
 2. **更新伏笔状态**：
    - 读 `20-threads.md`，本章让某条线程进入新状态（Draft→Active→PaidOff）则更新

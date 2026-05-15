@@ -1,6 +1,6 @@
 ---
 name: fuck-it
-description: 单章加戏——不改变章末目标，但让过程更戏剧、更夸张、更有表演力。
+description: 在以下情况加载这个skill：用户要在不改变章末目标的前提下给单章加戏，如"fuck it""单章加戏""过程更炸"等。
 when_to_use: |
   适用于"fuck it""单章加戏""同终点但过程更炸""这一章再上点强度"等请求。
   给 novel-discuss 和 novel-plan 用；未来剧情爆破用 booming。

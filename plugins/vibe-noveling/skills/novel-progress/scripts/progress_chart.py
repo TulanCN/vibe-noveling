@@ -15,9 +15,9 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent.parent.parent.paren
 
 # 文件分类规则：(分类名, glob_pattern 列表)
 CATEGORIES = [
-    ("大纲", ["chapters/vol-*/ch-*/大纲.md"]),
+    ("大纲", ["chapters/e*/ch-*/大纲.md"]),
     ("设定文件", ["memory/**/*.md"]),
-    ("正文", ["chapters/vol-*/ch-*/正文.md"]),
+    ("正文", ["chapters/e*/ch-*/正文.md"]),
 ]
 
 # 正文分类需要排除的文件（避免被大纲文件误匹配）
@@ -58,18 +58,18 @@ def classify_file(filepath: Path) -> str | None:
     """判断文件属于哪个分类，返回分类名或 None。"""
     rel = filepath.relative_to(PROJECT_ROOT).as_posix()
 
-    # 正文分类：匹配分卷/分章目录下的 正文.md
-    if re.match(r"chapters/vol-\d+/ch-\d+/正文\.md$", rel):
+    # 正文分类：匹配事件/章节目录下的 正文.md
+    if re.match(r"chapters/e\d+/ch-\d+/正文\.md$", rel):
         return "正文"
 
     # 大纲分类
-    if re.match(r"chapters/vol-\d+/ch-\d+/大纲\.md$", rel):
+    if re.match(r"chapters/e\d+/ch-\d+/大纲\.md$", rel):
         return "大纲"
 
     # 设定文件分类
     if rel.startswith("memory/") and rel.endswith(".md"):
         return "设定文件"
-    if re.match(r"chapters/vol-\d+/ch-\d+/上下文\.md$", rel):
+    if re.match(r"chapters/e\d+/ch-\d+/上下文\.md$", rel):
         return "设定文件"
 
     return None

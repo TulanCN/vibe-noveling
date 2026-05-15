@@ -1,6 +1,6 @@
 ---
 name: novel-knowledge
-description: 搜索、更新或重建小说知识图谱。
+description: 在以下情况加载这个skill：其他skill或agent需要搜索实体、查询关系、查询标签或重建知识图谱索引。
 when_to_use: |
   仅供其他 skill 或 agent 调用，用于实体搜索、关系查询、标签查询、索引重建。
 user-invocable: false

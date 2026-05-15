@@ -1,6 +1,6 @@
 ---
 name: booming
-description: 把剧情往更狠、更疯、更高冲突的方向炸开。
+description: 在以下情况加载这个skill：用户要求把剧情往更狠、更疯、更高冲突的方向爆开，如"booming""太平了""不够炸""上强度""爆一下剧情"等。
 when_to_use: |
   适用于"booming""太平了""不够炸""来点狠的""上强度""爆一下剧情""火力全开"等请求。
   常规章节规划用 novel-plan；正文创作用 novel-write。

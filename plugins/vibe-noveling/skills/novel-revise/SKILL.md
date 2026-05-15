@@ -1,6 +1,6 @@
 ---
 name: novel-revise
-description: 对已完成章节正文做返修——为每个标记生成 3 种改写候选，用户挑选后立即写入文件。
+description: 在以下情况加载这个skill：用户要对已完成章节正文做标记返修，如"返修""修改标记""润色标记""revise"等。
 when_to_use: |
   适用于"返修""修改标记""处理标记""润色标记""revise"等请求。
   正文创作用 novel-write；结构规划用 novel-plan。
